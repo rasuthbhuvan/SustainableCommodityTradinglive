@@ -3415,5 +3415,27 @@
             }
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+    const { createClient } = supabase;
+    const SUPABASE_URL = 'https://kunrarieegagtkxiudfa.supabase.co';
+    const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUxMjIyOCwiZXhwIjoyMDc1MDg4MjI4fQ.5UG0ffdyjyND018iopSeY9aCB3W_nljOsWu3G2bkrjo';
+    const supabaseClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+    
+    async function loadAdminData() {
+      let {  products } = await supabaseClient.from('products').select('*');
+      let {  categories } = await supabaseClient.from('categories').select('*');
+      // Call your ADMIN TABLE render functions here
+      renderAdminProducts(products || []);
+      renderAdminCategories(categories || []);
+    }
+    // Call once on load, and after every add/edit/delete
+    document.addEventListener('DOMContentLoaded', loadAdminData);
+    
+    // Example: call loadAdminData() after any change
+    // async function addProduct(productObj) { ...; await loadAdminData(); }
+    // async function updateProduct(productObj) { ...; await loadAdminData(); }
+    // async function deleteProduct(productId) { ...; await loadAdminData(); }
+    </script>
 </body>
 </html>
