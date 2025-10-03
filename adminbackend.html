@@ -3583,5 +3583,42 @@
     </script>
     </body>
     </html>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+    // Initialize Supabase client
+    const SUPABASE_URL = "https://kunrarieegagtkxiudfa.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI";
+    
+    // Create the Supabase client
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Load data for admin dashboard
+    async function loadAdminData() {
+      const {  products } = await supabase.from('products').select('*');
+      const {  categories } = await supabase.from('categories').select('*');
+      // Add other table fetches as needed
+      console.log('Products:', products);
+      console.log('Categories:', categories);
+      // TODO: Update your admin UI with this data
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadAdminData);
+    
+    // Example CRUD functions
+    async function addProduct(product) {
+      await supabase.from('products').insert([product]);
+      loadAdminData();
+    }
+    
+    async function updateProduct(id, changes) {
+      await supabase.from('products').update(changes).eq('id', id);
+      loadAdminData();
+    }
+    
+    async function deleteProduct(id) {
+      await supabase.from('products').delete().eq('id', id);
+      loadAdminData();
+    }
+    </script>
 </body>
 </html>
