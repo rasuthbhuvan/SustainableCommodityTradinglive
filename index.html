@@ -1079,19 +1079,68 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-    const { createClient } = supabase;
-    const SUPABASE_URL = 'https://kunrarieegagtkxiudfa.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI';
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { createClient } = supabase;
+      const SUPABASE_URL = 'https://kunrarieegagtkxiudfa.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI';
+      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    async function loadData() {
-      let {  categories, error: catError } = await supabaseClient.from('categories').select('*');
-      let {  products, error: prodError } = await supabaseClient.from('products').select('*');
-      // Call your RENDER functions using these arrays to update all UI
-      renderCategories(categories || []);
-      renderProducts(products || []);
-    }
-    document.addEventListener('DOMContentLoaded', loadData);
+      async function loadData() {
+        const {  categories, error: catError } = await supabaseClient.from('categories').select('*');
+        const {  products, error: prodError } = await supabaseClient.from('products').select('*');
+    
+        if (catError || prodError) {
+          alert('Error loading data');
+          return;
+        }
+    
+        renderCategories(categories || []);
+        renderProducts(products || []);
+      }
+    
+      function renderCategories(categories) {
+        const categoryFilters = document.getElementById('categoryFilters');
+        // Keep "All Categories" button, remove others:
+        categoryFilters.querySelectorAll('.filter-btn:not(:first-child)').forEach(btn => btn.remove());
+        categories.forEach(cat => {
+          const btn = document.createElement('button');
+          btn.textContent = cat.name;
+          btn.className = 'filter-btn';
+          btn.onclick = () => filterCategory(cat.id);
+          categoryFilters.appendChild(btn);
+        });
+      }
+    
+      function renderProducts(products) {
+        const productsGrid = document.getElementById('productsGrid');
+        productsGrid.innerHTML = '';
+        if (!products.length) {
+          productsGrid.innerHTML = '<p>No products found.</p>';
+          return;
+        }
+        products.forEach(prod => {
+          const card = document.createElement('div');
+          card.className = 'category-card';
+          card.dataset.category = prod.category_id;
+          card.innerHTML = `
+            <div class="category-header">
+              <div>
+                <h3 class="category-title">${prod.category_name}</h3>
+                <p class="category-description">${prod.description || ''}</p>
+              </div>
+              <span class="product-count">1 product</span>
+            </div>
+            <ul class="product-list">
+              <li class="product-item">
+                <div class="product-name">${prod.name}</div>
+                <div class="product-capacity">Capacity: ${prod.capacity}</div>
+              </li>
+            </ul>
+          `;
+          productsGrid.appendChild(card);
+        });
+      }
+    
+      document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
 </html>
