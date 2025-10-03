@@ -3437,5 +3437,59 @@
     // async function updateProduct(productObj) { ...; await loadAdminData(); }
     // async function deleteProduct(productId) { ...; await loadAdminData(); }
     </script>
+    <!-- ADD THIS AT THE END OF YOUR BODY, BEFORE </body> -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      // Supabase client configuration
+      const { createClient } = supabase;
+      const SUPABASE_URL = 'https://kunrarieegagtkxiudfa.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI';
+      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+      // LOAD categories and products when admin loads
+      async function loadAdminTables() {
+        const {  categories, error: catError } = await supabaseClient.from('categories').select('*');
+        const {  products, error: prodError } = await supabaseClient.from('products').select('*');
+        // Write functions to update your admin UI with these
+        renderAdminCategories(categories || []);
+        renderAdminProducts(products || []);
+      }
+    
+      // EXAMPLES -- replace these with your actual logic to update UI
+      function renderAdminCategories(categories) {
+        // Example: fill category table or dropdown
+        console.log('Categories for admin:', categories);
+        // ToDo: update your admin HTML table or form
+      }
+      function renderAdminProducts(products) {
+        // Example: fill product table
+        console.log('Products for admin:', products);
+        // ToDo: update your admin HTML table
+      }
+    
+      // CRUD EXAMPLES FOR ADMIN (connect these to button clicks/forms)
+      async function createProduct(productObj) {
+        const { data, error } = await supabaseClient.from('products').insert([productObj]);
+        loadAdminTables();
+        if (error) alert('Error adding product');
+      }
+    
+      async function updateProduct(productId, updateObj) {
+        const { data, error } = await supabaseClient.from('products').update(updateObj).eq('id', productId);
+        loadAdminTables();
+        if (error) alert('Error updating product');
+      }
+    
+      async function deleteProduct(productId) {
+        const { data, error } = await supabaseClient.from('products').delete().eq('id', productId);
+        loadAdminTables();
+        if (error) alert('Error deleting product');
+      }
+    
+      // Now, wire up your admin dashboard buttons/forms to call these CRUD functions as needed.
+    
+      // INITIAL LOAD FOR ADMIN VIEW
+      document.addEventListener('DOMContentLoaded', loadAdminTables);
+    </script>
 </body>
 </html>
