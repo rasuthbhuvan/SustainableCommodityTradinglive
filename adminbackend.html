@@ -3539,5 +3539,49 @@
     </script>
     </body>
     </html>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const { createClient } = supabase;
+      const SUPABASE_URL = "https://kunrarieegagtkxiudfa.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI";
+      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+      // Load all admin dashboard data
+      async function loadAdminData() {
+        const {  products } = await supabaseClient.from('products').select('*');
+        const {  categories } = await supabaseClient.from('categories').select('*');
+        const {  projects } = await supabaseClient.from('projects').select('*');
+        const {  inquiries } = await supabaseClient.from('inquiries').select('*');
+        const {  contacts } = await supabaseClient.from('contact_settings').select('*');
+        console.log('products:', products);
+        console.log('categories:', categories);
+        console.log('projects:', projects);
+        console.log('inquiries:', inquiries);
+        console.log('contacts:', contacts);
+        // TODO: Plug this data into your admin UI logic!
+      }
+    
+      document.addEventListener('DOMContentLoaded', loadAdminData);
+    
+      // Example: Add a new product
+      async function addProduct(productObj) {
+        await supabaseClient.from('products').insert([productObj]);
+        loadAdminData();
+      }
+    
+      // Example: Update product
+      async function updateProduct(id, updateFields) {
+        await supabaseClient.from('products').update(updateFields).eq('id', id);
+        loadAdminData();
+      }
+    
+      // Example: Delete product
+      async function deleteProduct(id) {
+        await supabaseClient.from('products').delete().eq('id', id);
+        loadAdminData();
+      }
+    </script>
+    </body>
+    </html>
 </body>
 </html>
