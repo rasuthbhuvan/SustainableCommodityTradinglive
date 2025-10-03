@@ -1077,5 +1077,21 @@
             }
         }
     </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const { createClient } = supabase;
+const SUPABASE_URL = 'https://kunrarieegagtkxiudfa.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI';
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function loadData() {
+  let {  categories, error: catError } = await supabaseClient.from('categories').select('*');
+  let {  products, error: prodError } = await supabaseClient.from('products').select('*');
+  // Call your RENDER functions using these arrays to update all UI
+  renderCategories(categories || []);
+  renderProducts(products || []);
+}
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
 </body>
 </html>
