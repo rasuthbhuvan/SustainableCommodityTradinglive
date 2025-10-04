@@ -1,4 +1,3 @@
-#BACKEND
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -470,6 +469,11 @@
             box-shadow: 0 0 0 3px rgba(255, 180, 0, 0.1);
         }
         
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
         .submit-button {
             padding: 15px 30px;
             background: linear-gradient(135deg, #FFB400, #e6a200);
@@ -1313,9 +1317,45 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* Loading and Sync States */
+        .sync-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #FFB400;
+            color: #333;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 3000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sync-indicator.show {
+            opacity: 1;
+        }
+        
+        .sync-indicator.error {
+            background: #f56565;
+            color: white;
+        }
+        
+        .sync-indicator.success {
+            background: #48bb78;
+            color: white;
+        }
     </style>
 </head>
 <body>
+    <!-- Sync Indicator -->
+    <div id="syncIndicator" class="sync-indicator">
+        Syncing with database...
+    </div>
+
     <!-- Mode Toggle Button -->
     <button class="mode-toggle" onclick="toggleMode()" id="modeToggle">Switch to Admin</button>
 
@@ -1978,172 +2018,141 @@
         </div>
     </div>
 
+    <!-- Supabase Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Enhanced Data Management System with Innovation Lab
-        class AdvancedDataManager {
+        // Supabase Configuration
+        const SUPABASE_URL = "https://kunrarieegagtkxiudfa.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI";
+        const SUPABASE_SERVICE_ROLE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUxMjIyOCwiZXhwIjoyMDc1MDg4MjI4fQ.5UG0ffdyjyND018iopSeY9aCB3W_nljOsWu3G2bkrjo";
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Enhanced Data Management System with Supabase Integration
+        class SupabaseDataManager {
             constructor() {
-                this.initializeData();
-                this.loadData();
+                this.products = {};
+                this.categories = {};
+                this.projects = {};
+                this.inquiries = [];
+                this.contactSettings = {};
+                this.syncIndicator = document.getElementById('syncIndicator');
+                this.init();
+            }
+
+            async init() {
+                await this.loadAllData();
                 this.updateStats();
                 this.renderFrontend();
                 this.renderAdmin();
                 this.loadContactSettings();
+                
+                // Set up real-time subscriptions
+                this.setupRealtimeSubscriptions();
             }
 
-            initializeData() {
-                // Default enhanced product data
-                const defaultProducts = {
-                    'poultry-protein': {
-                        id: 'poultry-protein',
-                        title: 'Poultry Waste-Derived Protein',
-                        category: 'proteins',
-                        overview: 'High-quality protein extracted from poultry waste using advanced processing techniques. Suitable for animal feed, aquaculture, and industrial applications.',
-                        specifications: {
-                            'Protein Content': '65-70%',
-                            'Moisture': '≤ 10%',
-                            'Fat Content': '≤ 12%',
-                            'Ash Content': '≤ 15%',
-                            'Fiber': '≤ 3%',
-                            'pH': '6.0-7.0',
-                            'Salmonella': 'Negative',
-                            'E.coli': '< 10 CFU/g'
-                        },
-                        applications: [
-                            'Animal feed supplement',
-                            'Aquaculture nutrition',
-                            'Pet food ingredient',
-                            'Organic fertilizer component'
-                        ],
-                        capacity: {
-                            'Monthly Capacity': '50 tons',
-                            'Annual Capacity': '600 tons',
-                            'Price': '$2,200/tonne',
-                            'Lead Time': '7-14 days'
-                        },
-                        media: {},
-                        environmentalImpact: 'Sustainable production with zero-waste manufacturing processes.',
-                        qualityAssurance: 'Rigorous testing and quality certificates provided with each shipment.',
-                        visible: true
-                    },
-                    'red-mud-pellets': {
-                        id: 'red-mud-pellets',
-                        title: 'Red Mud Pellets (ROSTA PELLET)',
-                        category: 'catalysts',
-                        overview: 'Premium iron ore pellets manufactured from processed red mud (bauxite residue) using advanced beneficiation techniques.',
-                        specifications: {
-                            'Total Iron (Fe)': '70-72%',
-                            'SiO₂ + Al₂O₃': '≤ 1.2%',
-                            'Phosphorus (P₂O₅)': '≤ 0.006%',
-                            'Sulfur (S)': '≤ 0.005%',
-                            'TiO₂': '≤ 0.10%',
-                            'CaO': '≤ 1.2%',
-                            'MgO': '≤ 0.50%',
-                            'Particle Size': '6-16 mm'
-                        },
-                        applications: [
-                            'Direct Reduced Iron (DRI) production',
-                            'Hydrogen-based steelmaking',
-                            'Electric Arc Furnace (EAF) feedstock',
-                            'Green steel production initiatives'
-                        ],
-                        capacity: {
-                            'Monthly Capacity': '500 tons',
-                            'Annual Capacity': '6,000 tons',
-                            'Price': '$145/tonne',
-                            'Lead Time': '15-30 days'
-                        },
-                        media: {},
-                        environmentalImpact: 'Sustainable production with zero-waste manufacturing processes.',
-                        qualityAssurance: 'Rigorous testing and quality certificates provided with each shipment.',
-                        visible: true
-                    }
-                };
+            showSyncIndicator(message, type = 'default') {
+                this.syncIndicator.textContent = message;
+                this.syncIndicator.className = `sync-indicator show ${type}`;
+                
+                setTimeout(() => {
+                    this.syncIndicator.classList.remove('show');
+                }, 3000);
+            }
 
-                // Default categories
-                const defaultCategories = {
-                    'proteins': {
-                        id: 'proteins',
-                        name: 'Sustainable Proteins',
-                        description: 'High-quality proteins derived from waste sources for various industrial applications',
-                        visible: true
-                    },
-                    'catalysts': {
-                        id: 'catalysts',
-                        name: 'Advanced Catalysts',
-                        description: 'Innovative catalysts from industrial waste streams for green manufacturing',
-                        visible: true
-                    },
-                    'manufacturing': {
-                        id: 'manufacturing',
-                        name: 'Green Manufacturing Inputs',
-                        description: 'Raw materials specifically designed for sustainable manufacturing processes',
-                        visible: true
-                    },
-                    'compost': {
-                        id: 'compost',
-                        name: 'Sustainable Compost & Amendments',
-                        description: 'Premium compost and soil amendments from various organic waste sources',
-                        visible: true
-                    }
-                };
+            async loadAllData() {
+                try {
+                    this.showSyncIndicator('Loading data from database...');
+                    
+                    // Load products
+                    const { data: productsData, error: productsError } = await supabaseClient
+                        .from('products')
+                        .select('*');
+                    
+                    if (productsError) throw productsError;
+                    
+                    this.products = {};
+                    productsData.forEach(product => {
+                        this.products[product.id] = {
+                            ...product,
+                            specifications: product.specifications || {},
+                            applications: product.applications || [],
+                            capacity: product.capacity || {},
+                            media: product.media || {},
+                            visible: product.visible !== false
+                        };
+                    });
 
-                // Default research projects - CHANGED "Development phase" TO "Manufacturing phase"
-                const defaultProjects = {
-                    'project1': {
-                        id: 'project1',
-                        title: 'Next-Gen Protein Extraction',
-                        phase: 'Manufacturing phase',
-                        expectedDate: 'Q2 2026',
-                        visible: true
-                    },
-                    'project2': {
-                        id: 'project2',
-                        title: 'Advanced Metal Recovery Systems',
-                        phase: 'Pilot testing',
-                        expectedDate: 'Q4 2025',
-                        visible: true
-                    },
-                    'project3': {
-                        id: 'project3',
-                        title: 'Waste-to-Energy Catalysts',
-                        phase: 'Research phase',
-                        expectedDate: 'Q3 2026',
-                        visible: true
-                    }
-                };
+                    // Load categories
+                    const { data: categoriesData, error: categoriesError } = await supabaseClient
+                        .from('categories')
+                        .select('*');
+                    
+                    if (categoriesError) throw categoriesError;
+                    
+                    this.categories = {};
+                    categoriesData.forEach(category => {
+                        this.categories[category.id] = {
+                            ...category,
+                            visible: category.visible !== false
+                        };
+                    });
 
-                // Default contact settings
-                const defaultContactSettings = {
-                    salesEmail: 'sales@commoditytrading.com',
-                    salesPhone: '+91-11-2345-6789',
-                    techEmail: 'technical@commoditytrading.com',
-                    techPhone: '+91-11-2345-6790',
-                    rdEmail: 'innovation@commoditytrading.com',
-                    rdPhone: '+91-11-2345-6791',
-                    primaryRecipient: 'admin@commoditytrading.com',
-                    ccEmail1: '',
-                    ccEmail2: ''
-                };
+                    // Load projects
+                    const { data: projectsData, error: projectsError } = await supabaseClient
+                        .from('projects')
+                        .select('*');
+                    
+                    if (projectsError) throw projectsError;
+                    
+                    this.projects = {};
+                    projectsData.forEach(project => {
+                        this.projects[project.id] = {
+                            ...project,
+                            visible: project.visible !== false
+                        };
+                    });
 
-                // Initialize if not exists
-                if (!localStorage.getItem('products')) {
-                    localStorage.setItem('products', JSON.stringify(defaultProducts));
-                }
-                if (!localStorage.getItem('categories')) {
-                    localStorage.setItem('categories', JSON.stringify(defaultCategories));
-                }
-                if (!localStorage.getItem('projects')) {
-                    localStorage.setItem('projects', JSON.stringify(defaultProjects));
-                }
-                if (!localStorage.getItem('inquiries')) {
-                    localStorage.setItem('inquiries', JSON.stringify([]));
-                }
-                if (!localStorage.getItem('contactSettings')) {
-                    localStorage.setItem('contactSettings', JSON.stringify(defaultContactSettings));
+                    // Load inquiries
+                    const { data: inquiriesData, error: inquiriesError } = await supabaseClient
+                        .from('inquiries')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    
+                    if (inquiriesError) throw inquiriesError;
+                    
+                    this.inquiries = inquiriesData || [];
+
+                    // Load contact settings
+                    const { data: contactData, error: contactError } = await supabaseClient
+                        .from('contact_settings')
+                        .select('*')
+                        .single();
+                    
+                    if (contactError && contactError.code !== 'PGRST116') throw contactError;
+                    
+                    this.contactSettings = contactData || {
+                        salesEmail: 'sales@commoditytrading.com',
+                        salesPhone: '+91-11-2345-6789',
+                        techEmail: 'technical@commoditytrading.com',
+                        techPhone: '+91-11-2345-6790',
+                        rdEmail: 'innovation@commoditytrading.com',
+                        rdPhone: '+91-11-2345-6791',
+                        primaryRecipient: 'admin@commoditytrading.com',
+                        ccEmail1: '',
+                        ccEmail2: ''
+                    };
+
+                    this.showSyncIndicator('Data loaded successfully!', 'success');
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    this.showSyncIndicator('Error loading data. Using local storage.', 'error');
+                    this.loadFromLocalStorage();
                 }
             }
 
-            loadData() {
+            loadFromLocalStorage() {
+                // Fallback to localStorage if Supabase fails
                 this.products = JSON.parse(localStorage.getItem('products') || '{}');
                 this.categories = JSON.parse(localStorage.getItem('categories') || '{}');
                 this.projects = JSON.parse(localStorage.getItem('projects') || '{}');
@@ -2151,12 +2160,61 @@
                 this.contactSettings = JSON.parse(localStorage.getItem('contactSettings') || '{}');
             }
 
-            saveData() {
+            saveToLocalStorage() {
                 localStorage.setItem('products', JSON.stringify(this.products));
                 localStorage.setItem('categories', JSON.stringify(this.categories));
                 localStorage.setItem('projects', JSON.stringify(this.projects));
                 localStorage.setItem('inquiries', JSON.stringify(this.inquiries));
                 localStorage.setItem('contactSettings', JSON.stringify(this.contactSettings));
+            }
+
+            setupRealtimeSubscriptions() {
+                // Subscribe to changes in products
+                supabaseClient
+                    .channel('products_changes')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async (payload) => {
+                        await this.loadAllData();
+                        this.updateStats();
+                        this.renderFrontend();
+                        this.renderAdmin();
+                        this.showSyncIndicator('Products updated!', 'success');
+                    })
+                    .subscribe();
+
+                // Subscribe to changes in categories
+                supabaseClient
+                    .channel('categories_changes')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, async (payload) => {
+                        await this.loadAllData();
+                        this.updateStats();
+                        this.renderFrontend();
+                        this.renderAdmin();
+                        this.showSyncIndicator('Categories updated!', 'success');
+                    })
+                    .subscribe();
+
+                // Subscribe to changes in projects
+                supabaseClient
+                    .channel('projects_changes')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, async (payload) => {
+                        await this.loadAllData();
+                        this.updateStats();
+                        this.renderFrontend();
+                        this.renderAdmin();
+                        this.showSyncIndicator('Projects updated!', 'success');
+                    })
+                    .subscribe();
+
+                // Subscribe to changes in inquiries
+                supabaseClient
+                    .channel('inquiries_changes')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'inquiries' }, async (payload) => {
+                        await this.loadAllData();
+                        this.updateStats();
+                        this.renderAdmin();
+                        this.showSyncIndicator('Inquiries updated!', 'success');
+                    })
+                    .subscribe();
             }
 
             updateStats() {
@@ -2218,7 +2276,7 @@
                             ${products.map(product => `
                                 <li class="product-item" onclick="event.stopPropagation(); openProductModal('${product.id}')">
                                     <div class="product-name">${product.title}</div>
-                                    <div class="product-capacity">Capacity: ${product.capacity['Monthly Capacity'] || 'N/A'}</div>
+                                    <div class="product-capacity">Capacity: ${product.capacity?.['Monthly Capacity'] || 'N/A'}</div>
                                 </li>
                             `).join('')}
                         </ul>
@@ -2326,8 +2384,8 @@
                     row.innerHTML = `
                         <td>${product.title}</td>
                         <td>${category ? category.name : 'Unknown'}</td>
-                        <td>${product.capacity['Monthly Capacity'] || 'N/A'}</td>
-                        <td>${product.capacity['Price'] || 'N/A'}</td>
+                        <td>${product.capacity?.['Monthly Capacity'] || 'N/A'}</td>
+                        <td>${product.capacity?.['Price'] || 'N/A'}</td>
                         <td>${product.visible ? 'Visible' : 'Hidden'}</td>
                         <td>
                             <button class="action-btn edit-btn" onclick="editProduct('${product.id}')">Edit</button>
@@ -2410,14 +2468,14 @@
 
                 this.inquiries.forEach((inquiry, index) => {
                     const row = document.createElement('tr');
-                    const date = new Date(inquiry.date).toLocaleDateString();
+                    const date = new Date(inquiry.created_at || inquiry.date).toLocaleDateString();
 
                     row.innerHTML = `
                         <td>${date}</td>
                         <td>${inquiry.company || 'N/A'}</td>
                         <td>${inquiry.contact || 'N/A'}</td>
                         <td>${inquiry.interest || 'N/A'}</td>
-                        <td>${inquiry.status}</td>
+                        <td>${inquiry.status || 'New'}</td>
                         <td>
                             <button class="action-btn view-btn" onclick="viewInquiry(${index})">View</button>
                             <button class="action-btn edit-btn" onclick="editInquiryEmail(${index})">Edit Email</button>
@@ -2443,7 +2501,66 @@
             }
 
             // Enhanced CRUD Operations - Products
-            addProduct(productData) {
+            async addProduct(productData) {
+                try {
+                    this.showSyncIndicator('Adding product...');
+                    
+                    const id = productData.id || this.generateId();
+                    
+                    // Process specifications
+                    const specifications = {};
+                    if (productData.specName && productData.specValue) {
+                        for (let i = 0; i < productData.specName.length; i++) {
+                            if (productData.specName[i] && productData.specValue[i]) {
+                                specifications[productData.specName[i]] = productData.specValue[i];
+                            }
+                        }
+                    }
+
+                    // Process applications
+                    const applications = [];
+                    if (productData.application) {
+                        productData.application.forEach(app => {
+                            if (app.trim()) applications.push(app.trim());
+                        });
+                    }
+
+                    const product = {
+                        id: id,
+                        title: productData.title,
+                        category: productData.category,
+                        overview: productData.overview,
+                        specifications: specifications,
+                        applications: applications,
+                        capacity: {
+                            'Monthly Capacity': productData.monthlyCapacity,
+                            'Annual Capacity': productData.annualCapacity || '',
+                            'Price': productData.price,
+                            'Lead Time': productData.leadTime || ''
+                        },
+                        media: productData.media || {},
+                        environmentalImpact: productData.environmentalImpact || '',
+                        qualityAssurance: productData.qualityAssurance || '',
+                        visible: true,
+                        created_at: new Date().toISOString()
+                    };
+
+                    const { data, error } = await supabaseClient
+                        .from('products')
+                        .insert([product]);
+
+                    if (error) throw error;
+
+                    this.showSyncIndicator('Product added successfully!', 'success');
+                } catch (error) {
+                    console.error('Error adding product:', error);
+                    this.showSyncIndicator('Error adding product', 'error');
+                    // Fallback to local storage
+                    this.addProductLocal(productData);
+                }
+            }
+
+            addProductLocal(productData) {
                 const id = productData.id || this.generateId();
                 
                 // Process specifications
@@ -2483,13 +2600,68 @@
                     visible: true
                 };
                 
-                this.saveData();
+                this.saveToLocalStorage();
                 this.updateStats();
                 this.renderFrontend();
                 this.renderAdmin();
             }
 
-            editProduct(id, productData) {
+            async editProduct(id, productData) {
+                try {
+                    this.showSyncIndicator('Updating product...');
+                    
+                    // Process specifications
+                    const specifications = {};
+                    if (productData.specName && productData.specValue) {
+                        for (let i = 0; i < productData.specName.length; i++) {
+                            if (productData.specName[i] && productData.specValue[i]) {
+                                specifications[productData.specName[i]] = productData.specValue[i];
+                            }
+                        }
+                    }
+
+                    // Process applications
+                    const applications = [];
+                    if (productData.application) {
+                        productData.application.forEach(app => {
+                            if (app.trim()) applications.push(app.trim());
+                        });
+                    }
+
+                    const updateData = {
+                        title: productData.title,
+                        category: productData.category,
+                        overview: productData.overview,
+                        specifications: specifications,
+                        applications: applications,
+                        capacity: {
+                            'Monthly Capacity': productData.monthlyCapacity,
+                            'Annual Capacity': productData.annualCapacity || '',
+                            'Price': productData.price,
+                            'Lead Time': productData.leadTime || ''
+                        },
+                        media: productData.media || this.products[id]?.media || {},
+                        environmentalImpact: productData.environmentalImpact || '',
+                        qualityAssurance: productData.qualityAssurance || '',
+                        updated_at: new Date().toISOString()
+                    };
+
+                    const { data, error } = await supabaseClient
+                        .from('products')
+                        .update(updateData)
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    this.showSyncIndicator('Product updated successfully!', 'success');
+                } catch (error) {
+                    console.error('Error updating product:', error);
+                    this.showSyncIndicator('Error updating product', 'error');
+                    this.editProductLocal(id, productData);
+                }
+            }
+
+            editProductLocal(id, productData) {
                 if (this.products[id]) {
                     // Process specifications
                     const specifications = {};
@@ -2527,33 +2699,99 @@
                         qualityAssurance: productData.qualityAssurance || ''
                     };
                     
-                    this.saveData();
+                    this.saveToLocalStorage();
                     this.renderFrontend();
                     this.renderAdmin();
                 }
             }
 
-            deleteProduct(id) {
+            async deleteProduct(id) {
                 if (confirm('Are you sure you want to delete this product?')) {
-                    delete this.products[id];
-                    this.saveData();
-                    this.updateStats();
-                    this.renderFrontend();
-                    this.renderAdmin();
+                    try {
+                        this.showSyncIndicator('Deleting product...');
+                        
+                        const { data, error } = await supabaseClient
+                            .from('products')
+                            .delete()
+                            .eq('id', id);
+
+                        if (error) throw error;
+
+                        this.showSyncIndicator('Product deleted successfully!', 'success');
+                    } catch (error) {
+                        console.error('Error deleting product:', error);
+                        this.showSyncIndicator('Error deleting product', 'error');
+                        this.deleteProductLocal(id);
+                    }
                 }
             }
 
-            toggleProductVisibility(id) {
+            deleteProductLocal(id) {
+                delete this.products[id];
+                this.saveToLocalStorage();
+                this.updateStats();
+                this.renderFrontend();
+                this.renderAdmin();
+            }
+
+            async toggleProductVisibility(id) {
+                try {
+                    this.showSyncIndicator('Updating product visibility...');
+                    
+                    const newVisibility = !this.products[id].visible;
+                    const { data, error } = await supabaseClient
+                        .from('products')
+                        .update({ visible: newVisibility, updated_at: new Date().toISOString() })
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    this.showSyncIndicator('Product visibility updated!', 'success');
+                } catch (error) {
+                    console.error('Error updating product visibility:', error);
+                    this.showSyncIndicator('Error updating visibility', 'error');
+                    this.toggleProductVisibilityLocal(id);
+                }
+            }
+
+            toggleProductVisibilityLocal(id) {
                 if (this.products[id]) {
                     this.products[id].visible = !this.products[id].visible;
-                    this.saveData();
+                    this.saveToLocalStorage();
                     this.renderFrontend();
                     this.renderAdmin();
                 }
             }
 
             // CRUD Operations - Categories
-            addCategory(categoryData) {
+            async addCategory(categoryData) {
+                try {
+                    this.showSyncIndicator('Adding category...');
+                    
+                    const id = categoryData.id || this.generateId();
+                    const category = {
+                        id: id,
+                        name: categoryData.name,
+                        description: categoryData.description,
+                        visible: true,
+                        created_at: new Date().toISOString()
+                    };
+
+                    const { data, error } = await supabaseClient
+                        .from('categories')
+                        .insert([category]);
+
+                    if (error) throw error;
+
+                    this.showSyncIndicator('Category added successfully!', 'success');
+                } catch (error) {
+                    console.error('Error adding category:', error);
+                    this.showSyncIndicator('Error adding category', 'error');
+                    this.addCategoryLocal(categoryData);
+                }
+            }
+
+            addCategoryLocal(categoryData) {
                 const id = categoryData.id || this.generateId();
                 this.categories[id] = {
                     id: id,
@@ -2561,46 +2799,144 @@
                     description: categoryData.description,
                     visible: true
                 };
-                this.saveData();
+                this.saveToLocalStorage();
                 this.updateStats();
                 this.renderFrontend();
                 this.renderAdmin();
             }
 
-            editCategory(id, categoryData) {
+            async editCategory(id, categoryData) {
+                try {
+                    this.showSyncIndicator('Updating category...');
+                    
+                    const updateData = {
+                        name: categoryData.name,
+                        description: categoryData.description,
+                        updated_at: new Date().toISOString()
+                    };
+
+                    const { data, error } = await supabaseClient
+                        .from('categories')
+                        .update(updateData)
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    this.showSyncIndicator('Category updated successfully!', 'success');
+                } catch (error) {
+                    console.error('Error updating category:', error);
+                    this.showSyncIndicator('Error updating category', 'error');
+                    this.editCategoryLocal(id, categoryData);
+                }
+            }
+
+            editCategoryLocal(id, categoryData) {
                 if (this.categories[id]) {
                     this.categories[id] = {
                         ...this.categories[id],
                         name: categoryData.name,
                         description: categoryData.description
                     };
-                    this.saveData();
+                    this.saveToLocalStorage();
                     this.renderFrontend();
                     this.renderAdmin();
                 }
             }
 
-            deleteCategory(id) {
+            async deleteCategory(id) {
                 if (confirm('Are you sure you want to delete this category?')) {
-                    delete this.categories[id];
-                    this.saveData();
-                    this.updateStats();
-                    this.renderFrontend();
-                    this.renderAdmin();
+                    try {
+                        this.showSyncIndicator('Deleting category...');
+                        
+                        const { data, error } = await supabaseClient
+                            .from('categories')
+                            .delete()
+                            .eq('id', id);
+
+                        if (error) throw error;
+
+                        this.showSyncIndicator('Category deleted successfully!', 'success');
+                    } catch (error) {
+                        console.error('Error deleting category:', error);
+                        this.showSyncIndicator('Error deleting category', 'error');
+                        this.deleteCategoryLocal(id);
+                    }
                 }
             }
 
-            toggleCategoryVisibility(id) {
+            deleteCategoryLocal(id) {
+                delete this.categories[id];
+                this.saveToLocalStorage();
+                this.updateStats();
+                this.renderFrontend();
+                this.renderAdmin();
+            }
+
+            async toggleCategoryVisibility(id) {
+                try {
+                    this.showSyncIndicator('Updating category visibility...');
+                    
+                    const newVisibility = !this.categories[id].visible;
+                    const { data, error } = await supabaseClient
+                        .from('categories')
+                        .update({ visible: newVisibility, updated_at: new Date().toISOString() })
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    this.showSyncIndicator('Category visibility updated!', 'success');
+                } catch (error) {
+                    console.error('Error updating category visibility:', error);
+                    this.showSyncIndicator('Error updating visibility', 'error');
+                    this.toggleCategoryVisibilityLocal(id);
+                }
+            }
+
+            toggleCategoryVisibilityLocal(id) {
                 if (this.categories[id]) {
                     this.categories[id].visible = !this.categories[id].visible;
-                    this.saveData();
+                    this.saveToLocalStorage();
                     this.renderFrontend();
                     this.renderAdmin();
                 }
             }
 
             // CRUD Operations - Projects
-            addProject(projectData) {
+            async addProject(projectData) {
+                try {
+                    // Check if we already have 3 projects
+                    if (Object.keys(this.projects).length >= 3) {
+                        alert('Maximum 3 projects allowed. Please delete an existing project to add a new one.');
+                        return;
+                    }
+
+                    this.showSyncIndicator('Adding project...');
+                    
+                    const id = projectData.id || this.generateId();
+                    const project = {
+                        id: id,
+                        title: projectData.title,
+                        phase: projectData.phase,
+                        expectedDate: projectData.expectedDate,
+                        visible: true,
+                        created_at: new Date().toISOString()
+                    };
+
+                    const { data, error } = await supabaseClient
+                        .from('projects')
+                        .insert([project]);
+
+                    if (error) throw error;
+
+                    this.showSyncIndicator('Project added successfully!', 'success');
+                } catch (error) {
+                    console.error('Error adding project:', error);
+                    this.showSyncIndicator('Error adding project', 'error');
+                    this.addProjectLocal(projectData);
+                }
+            }
+
+            addProjectLocal(projectData) {
                 // Check if we already have 3 projects
                 if (Object.keys(this.projects).length >= 3) {
                     alert('Maximum 3 projects allowed. Please delete an existing project to add a new one.');
@@ -2615,13 +2951,39 @@
                     expectedDate: projectData.expectedDate,
                     visible: true
                 };
-                this.saveData();
+                this.saveToLocalStorage();
                 this.updateStats();
                 this.renderFrontend();
                 this.renderAdmin();
             }
 
-            editProject(id, projectData) {
+            async editProject(id, projectData) {
+                try {
+                    this.showSyncIndicator('Updating project...');
+                    
+                    const updateData = {
+                        title: projectData.title,
+                        phase: projectData.phase,
+                        expectedDate: projectData.expectedDate,
+                        updated_at: new Date().toISOString()
+                    };
+
+                    const { data, error } = await supabaseClient
+                        .from('projects')
+                        .update(updateData)
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    this.showSyncIndicator('Project updated successfully!', 'success');
+                } catch (error) {
+                    console.error('Error updating project:', error);
+                    this.showSyncIndicator('Error updating project', 'error');
+                    this.editProjectLocal(id, projectData);
+                }
+            }
+
+            editProjectLocal(id, projectData) {
                 if (this.projects[id]) {
                     this.projects[id] = {
                         ...this.projects[id],
@@ -2629,35 +2991,111 @@
                         phase: projectData.phase,
                         expectedDate: projectData.expectedDate
                     };
-                    this.saveData();
+                    this.saveToLocalStorage();
                     this.renderFrontend();
                     this.renderAdmin();
                 }
             }
 
-            deleteProject(id) {
+            async deleteProject(id) {
                 if (confirm('Are you sure you want to delete this project?')) {
-                    delete this.projects[id];
-                    this.saveData();
-                    this.updateStats();
-                    this.renderFrontend();
-                    this.renderAdmin();
+                    try {
+                        this.showSyncIndicator('Deleting project...');
+                        
+                        const { data, error } = await supabaseClient
+                            .from('projects')
+                            .delete()
+                            .eq('id', id);
+
+                        if (error) throw error;
+
+                        this.showSyncIndicator('Project deleted successfully!', 'success');
+                    } catch (error) {
+                        console.error('Error deleting project:', error);
+                        this.showSyncIndicator('Error deleting project', 'error');
+                        this.deleteProjectLocal(id);
+                    }
                 }
             }
 
-            toggleProjectVisibility(id) {
+            deleteProjectLocal(id) {
+                delete this.projects[id];
+                this.saveToLocalStorage();
+                this.updateStats();
+                this.renderFrontend();
+                this.renderAdmin();
+            }
+
+            async toggleProjectVisibility(id) {
+                try {
+                    this.showSyncIndicator('Updating project visibility...');
+                    
+                    const newVisibility = !this.projects[id].visible;
+                    const { data, error } = await supabaseClient
+                        .from('projects')
+                        .update({ visible: newVisibility, updated_at: new Date().toISOString() })
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    this.showSyncIndicator('Project visibility updated!', 'success');
+                } catch (error) {
+                    console.error('Error updating project visibility:', error);
+                    this.showSyncIndicator('Error updating visibility', 'error');
+                    this.toggleProjectVisibilityLocal(id);
+                }
+            }
+
+            toggleProjectVisibilityLocal(id) {
                 if (this.projects[id]) {
                     this.projects[id].visible = !this.projects[id].visible;
-                    this.saveData();
+                    this.saveToLocalStorage();
                     this.renderFrontend();
                     this.renderAdmin();
                 }
             }
 
             // CRUD Operations - Inquiries
-            addInquiry(inquiryData) {
+            async addInquiry(inquiryData) {
+                try {
+                    this.showSyncIndicator('Adding inquiry...');
+                    
+                    const inquiry = {
+                        id: inquiryData.id || this.generateId(),
+                        company: inquiryData.company,
+                        contact: inquiryData.contact,
+                        email: inquiryData.email,
+                        interest: inquiryData.interest,
+                        message: inquiryData.message,
+                        material: inquiryData.material || '',
+                        volume: inquiryData.volume || '',
+                        timeline: inquiryData.timeline || '',
+                        requirements: inquiryData.requirements || '',
+                        status: 'New',
+                        recipients: {
+                            primary: this.contactSettings.primaryRecipient,
+                            cc: [this.contactSettings.ccEmail1, this.contactSettings.ccEmail2].filter(email => email)
+                        },
+                        created_at: new Date().toISOString()
+                    };
+
+                    const { data, error } = await supabaseClient
+                        .from('inquiries')
+                        .insert([inquiry]);
+
+                    if (error) throw error;
+
+                    this.showSyncIndicator('Inquiry added successfully!', 'success');
+                } catch (error) {
+                    console.error('Error adding inquiry:', error);
+                    this.showSyncIndicator('Error adding inquiry', 'error');
+                    this.addInquiryLocal(inquiryData);
+                }
+            }
+
+            addInquiryLocal(inquiryData) {
                 const inquiry = {
-                    id: Date.now(),
+                    id: inquiryData.id || this.generateId(),
                     company: inquiryData.company,
                     contact: inquiryData.contact,
                     email: inquiryData.email,
@@ -2667,7 +3105,7 @@
                     volume: inquiryData.volume || '',
                     timeline: inquiryData.timeline || '',
                     requirements: inquiryData.requirements || '',
-                    date: new Date().toISOString(),
+                    date: inquiryData.date || new Date().toISOString(),
                     status: 'New',
                     recipients: {
                         primary: this.contactSettings.primaryRecipient,
@@ -2675,25 +3113,72 @@
                     }
                 };
                 this.inquiries.push(inquiry);
-                this.saveData();
+                this.saveToLocalStorage();
                 this.updateStats();
                 this.renderAdmin();
             }
 
-            updateInquiryEmailSettings(index, emailSettings) {
+            async updateInquiryEmailSettings(index, emailSettings) {
+                try {
+                    this.showSyncIndicator('Updating inquiry email settings...');
+                    
+                    const inquiry = this.inquiries[index];
+                    const updateData = {
+                        recipients: {
+                            primary: emailSettings.primaryRecipient,
+                            cc: [emailSettings.ccEmail1, emailSettings.ccEmail2].filter(email => email)
+                        },
+                        updated_at: new Date().toISOString()
+                    };
+
+                    const { data, error } = await supabaseClient
+                        .from('inquiries')
+                        .update(updateData)
+                        .eq('id', inquiry.id);
+
+                    if (error) throw error;
+
+                    this.showSyncIndicator('Email settings updated!', 'success');
+                } catch (error) {
+                    console.error('Error updating inquiry email settings:', error);
+                    this.showSyncIndicator('Error updating email settings', 'error');
+                    this.updateInquiryEmailSettingsLocal(index, emailSettings);
+                }
+            }
+
+            updateInquiryEmailSettingsLocal(index, emailSettings) {
                 if (this.inquiries[index]) {
                     this.inquiries[index].recipients = {
                         primary: emailSettings.primaryRecipient,
                         cc: [emailSettings.ccEmail1, emailSettings.ccEmail2].filter(email => email)
                     };
-                    this.saveData();
+                    this.saveToLocalStorage();
                     this.renderAdmin();
                 }
             }
 
-            saveContactSettings(settings) {
+            async saveContactSettings(settings) {
+                try {
+                    this.showSyncIndicator('Saving contact settings...');
+                    
+                    const { data, error } = await supabaseClient
+                        .from('contact_settings')
+                        .upsert(settings);
+
+                    if (error) throw error;
+
+                    this.contactSettings = { ...settings };
+                    this.showSyncIndicator('Contact settings saved successfully!', 'success');
+                } catch (error) {
+                    console.error('Error saving contact settings:', error);
+                    this.showSyncIndicator('Error saving contact settings', 'error');
+                    this.saveContactSettingsLocal(settings);
+                }
+            }
+
+            saveContactSettingsLocal(settings) {
                 this.contactSettings = { ...settings };
-                this.saveData();
+                this.saveToLocalStorage();
                 this.updateContactInfo();
             }
 
@@ -2703,7 +3188,7 @@
         }
 
         // Initialize data manager
-        const dataManager = new AdvancedDataManager();
+        const dataManager = new SupabaseDataManager();
 
         // Mode switching
         let currentMode = 'frontend';
@@ -2857,7 +3342,7 @@
                 <div class="modal-section">
                     <h3>Technical Specifications</h3>
                     <div class="spec-grid">
-                        ${Object.entries(product.specifications).slice(0, 8).map(([key, value]) => 
+                        ${Object.entries(product.specifications || {}).slice(0, 8).map(([key, value]) => 
                             `<div class="spec-item">
                                 <strong>${key}:</strong> ${value}
                             </div>`
@@ -2868,7 +3353,7 @@
                 <div class="modal-section">
                     <h3>Applications</h3>
                     <ul>
-                        ${product.applications.map(app => `<li>${app}</li>`).join('')}
+                        ${(product.applications || []).map(app => `<li>${app}</li>`).join('')}
                     </ul>
                 </div>
             `;
@@ -2943,7 +3428,7 @@
                 <div class="modal-section">
                     <h3>Production Capacity & Pricing</h3>
                     <div class="spec-grid">
-                        ${Object.entries(product.capacity).map(([key, value]) => 
+                        ${Object.entries(product.capacity || {}).map(([key, value]) => 
                             `<div class="spec-item">
                                 <strong>${key}:</strong> ${value}
                             </div>`
@@ -2984,7 +3469,7 @@
             console.log(`Opening ${category} category page`);
         }
 
-        // Quote Modal Functions - Routes to contact settings email
+        // Quote Modal Functions
         function openQuoteModal(service) {
             dataManager.loadQuoteCategoryOptions();
             document.getElementById('quoteModal').style.display = 'block';
@@ -3132,17 +3617,17 @@
             form.elements['title'].value = product.title;
             form.elements['category'].value = product.category;
             form.elements['overview'].value = product.overview;
-            form.elements['monthlyCapacity'].value = product.capacity['Monthly Capacity'] || '';
-            form.elements['annualCapacity'].value = product.capacity['Annual Capacity'] || '';
-            form.elements['price'].value = product.capacity['Price'] || '';
-            form.elements['leadTime'].value = product.capacity['Lead Time'] || '';
+            form.elements['monthlyCapacity'].value = product.capacity?.['Monthly Capacity'] || '';
+            form.elements['annualCapacity'].value = product.capacity?.['Annual Capacity'] || '';
+            form.elements['price'].value = product.capacity?.['Price'] || '';
+            form.elements['leadTime'].value = product.capacity?.['Lead Time'] || '';
             form.elements['environmentalImpact'].value = product.environmentalImpact || '';
             form.elements['qualityAssurance'].value = product.qualityAssurance || '';
 
             // Fill specifications
             const specsContainer = document.getElementById('specificationsFields');
             specsContainer.innerHTML = '';
-            Object.entries(product.specifications).forEach(([key, value]) => {
+            Object.entries(product.specifications || {}).forEach(([key, value]) => {
                 const fieldRow = document.createElement('div');
                 fieldRow.className = 'field-row';
                 fieldRow.innerHTML = `
@@ -3156,7 +3641,7 @@
             // Fill applications
             const appsContainer = document.getElementById('applicationsFields');
             appsContainer.innerHTML = '';
-            product.applications.forEach(app => {
+            (product.applications || []).forEach(app => {
                 const fieldRow = document.createElement('div');
                 fieldRow.className = 'field-row';
                 fieldRow.innerHTML = `
@@ -3415,211 +3900,6 @@
                 event.target.style.display = 'none';
             }
         }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-    const { createClient } = supabase;
-    const SUPABASE_URL = 'https://kunrarieegagtkxiudfa.supabase.co';
-    const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUxMjIyOCwiZXhwIjoyMDc1MDg4MjI4fQ.5UG0ffdyjyND018iopSeY9aCB3W_nljOsWu3G2bkrjo';
-    const supabaseClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-    
-    async function loadAdminData() {
-      let {  products } = await supabaseClient.from('products').select('*');
-      let {  categories } = await supabaseClient.from('categories').select('*');
-      // Call your ADMIN TABLE render functions here
-      renderAdminProducts(products || []);
-      renderAdminCategories(categories || []);
-    }
-    // Call once on load, and after every add/edit/delete
-    document.addEventListener('DOMContentLoaded', loadAdminData);
-    
-    // Example: call loadAdminData() after any change
-    // async function addProduct(productObj) { ...; await loadAdminData(); }
-    // async function updateProduct(productObj) { ...; await loadAdminData(); }
-    // async function deleteProduct(productId) { ...; await loadAdminData(); }
-    </script>
-    <!-- ADD THIS AT THE END OF YOUR BODY, BEFORE </body> -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-      // Supabase client configuration
-      const { createClient } = supabase;
-      const SUPABASE_URL = 'https://kunrarieegagtkxiudfa.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI';
-      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-      // LOAD categories and products when admin loads
-      async function loadAdminTables() {
-        const {  categories, error: catError } = await supabaseClient.from('categories').select('*');
-        const {  products, error: prodError } = await supabaseClient.from('products').select('*');
-        // Write functions to update your admin UI with these
-        renderAdminCategories(categories || []);
-        renderAdminProducts(products || []);
-      }
-    
-      // EXAMPLES -- replace these with your actual logic to update UI
-      function renderAdminCategories(categories) {
-        // Example: fill category table or dropdown
-        console.log('Categories for admin:', categories);
-        // ToDo: update your admin HTML table or form
-      }
-      function renderAdminProducts(products) {
-        // Example: fill product table
-        console.log('Products for admin:', products);
-        // ToDo: update your admin HTML table
-      }
-    
-      // CRUD EXAMPLES FOR ADMIN (connect these to button clicks/forms)
-      async function createProduct(productObj) {
-        const { data, error } = await supabaseClient.from('products').insert([productObj]);
-        loadAdminTables();
-        if (error) alert('Error adding product');
-      }
-    
-      async function updateProduct(productId, updateObj) {
-        const { data, error } = await supabaseClient.from('products').update(updateObj).eq('id', productId);
-        loadAdminTables();
-        if (error) alert('Error updating product');
-      }
-    
-      async function deleteProduct(productId) {
-        const { data, error } = await supabaseClient.from('products').delete().eq('id', productId);
-        loadAdminTables();
-        if (error) alert('Error deleting product');
-      }
-    
-      // Now, wire up your admin dashboard buttons/forms to call these CRUD functions as needed.
-    
-      // INITIAL LOAD FOR ADMIN VIEW
-      document.addEventListener('DOMContentLoaded', loadAdminTables);
-    </script>
-    <!-- Add this before </body> in both admin and index/public HTML -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-      const { createClient } = supabase;
-      const SUPABASE_URL = "https://kunrarieegagtkxiudfa.supabase.co";
-      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI";
-      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-      const { createClient } = supabase;
-      const SUPABASE_URL = "https://kunrarieegagtkxiudfa.supabase.co";
-      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI";
-      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-      // Admin: example for loading all products, categories, projects, and inquiries
-      async function loadAdminData() {
-        const {  products } = await supabaseClient.from('products').select('*');
-        const {  categories } = await supabaseClient.from('categories').select('*');
-        const {  projects } = await supabaseClient.from('projects').select('*');
-        const {  inquiries } = await supabaseClient.from('inquiries').select('*');
-        const {  contacts } = await supabaseClient.from('contact_settings').select('*');
-        console.log('Products:', products);
-        console.log('Categories:', categories);
-        console.log('Projects:', projects);
-        console.log('Inquiries:', inquiries);
-        console.log('Contacts:', contacts);
-        // TODO: Use this data to power your admin dashboard
-      }
-      document.addEventListener('DOMContentLoaded', loadAdminData);
-    
-      // Example: Functions to create, update, or delete products.
-      // Connect these to your admin form & buttons as needed.
-      async function addProduct(productObj) {
-        await supabaseClient.from('products').insert([productObj]);
-        loadAdminData();
-      }
-      async function updateProduct(id, updateFields) {
-        await supabaseClient.from('products').update(updateFields).eq('id', id);
-        loadAdminData();
-      }
-      async function deleteProduct(id) {
-        await supabaseClient.from('products').delete().eq('id', id);
-        loadAdminData();
-      }
-    </script>
-    </body>
-    </html>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-      const { createClient } = supabase;
-      const SUPABASE_URL = "https://kunrarieegagtkxiudfa.supabase.co";
-      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI";
-      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-      // Load all admin dashboard data
-      async function loadAdminData() {
-        const {  products } = await supabaseClient.from('products').select('*');
-        const {  categories } = await supabaseClient.from('categories').select('*');
-        const {  projects } = await supabaseClient.from('projects').select('*');
-        const {  inquiries } = await supabaseClient.from('inquiries').select('*');
-        const {  contacts } = await supabaseClient.from('contact_settings').select('*');
-        console.log('products:', products);
-        console.log('categories:', categories);
-        console.log('projects:', projects);
-        console.log('inquiries:', inquiries);
-        console.log('contacts:', contacts);
-        // TODO: Plug this data into your admin UI logic!
-      }
-    
-      document.addEventListener('DOMContentLoaded', loadAdminData);
-    
-      // Example: Add a new product
-      async function addProduct(productObj) {
-        await supabaseClient.from('products').insert([productObj]);
-        loadAdminData();
-      }
-    
-      // Example: Update product
-      async function updateProduct(id, updateFields) {
-        await supabaseClient.from('products').update(updateFields).eq('id', id);
-        loadAdminData();
-      }
-    
-      // Example: Delete product
-      async function deleteProduct(id) {
-        await supabaseClient.from('products').delete().eq('id', id);
-        loadAdminData();
-      }
-    </script>
-    </body>
-    </html>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-    // Initialize Supabase client
-    const SUPABASE_URL = "https://kunrarieegagtkxiudfa.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI";
-    
-    // Create the Supabase client
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // Load data for admin dashboard
-    async function loadAdminData() {
-      const {  products } = await supabase.from('products').select('*');
-      const {  categories } = await supabase.from('categories').select('*');
-      // Add other table fetches as needed
-      console.log('Products:', products);
-      console.log('Categories:', categories);
-      // TODO: Update your admin UI with this data
-    }
-    
-    document.addEventListener('DOMContentLoaded', loadAdminData);
-    
-    // Example CRUD functions
-    async function addProduct(product) {
-      await supabase.from('products').insert([product]);
-      loadAdminData();
-    }
-    
-    async function updateProduct(id, changes) {
-      await supabase.from('products').update(changes).eq('id', id);
-      loadAdminData();
-    }
-    
-    async function deleteProduct(id) {
-      await supabase.from('products').delete().eq('id', id);
-      loadAdminData();
-    }
     </script>
 </body>
 </html>
