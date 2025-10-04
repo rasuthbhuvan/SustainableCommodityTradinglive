@@ -1,11 +1,11 @@
+#BACKEND
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commodity Trading - Admin Panel</title>
+    <title>Commodity Trading - Complete Admin System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -20,20 +20,751 @@
             color: #333;
         }
 
-        /* Debug Panel */
-        .debug-panel {
+        /* Mode Toggle */
+        .mode-toggle {
             position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            background: #FFB400;
+            color: #333;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .mode-toggle:hover {
+            background: #e6a200;
+        }
+
+        /* Frontend View Styles */
+        .frontend-view {
+            display: none;
+            background: white;
+            color: #333;
+            padding: 20px;
+        }
+
+        .frontend-view.active {
+            display: block;
+        }
+
+        .frontend-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .search-section {
+            background: white;
+            border: 1.5px solid #FFB400;
+            border-radius: 5px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 1.5px solid #FFB400;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #333;
+        }
+        
+        .search-button {
+            padding: 15px 30px;
+            background: #FFB400;
+            color: white;
+            border: 2px solid rgba(40, 40, 40, 0.2);
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .search-button:hover {
+            background: #CF9200;
+            border-color: rgba(40, 40, 40, 0.3);
+        }
+        
+        .category-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 1.5px solid #FFB400;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+        }
+        
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: #FFB400;
+            color: #333;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 5px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1.5px solid #FFB400;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 1.5px solid #FFB400;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .product-count {
+            background: #FFB400;
+            color: #333;
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .product-list {
+            list-style: none;
+        }
+        
+        .product-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 180, 0, 0.1);
+            border-left: 4px solid #FFB400;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .product-item:hover {
+            background: rgba(255, 180, 0, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .product-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .product-capacity {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Innovation Lab Section */
+        .innovation-section {
+            background: white;
+            border-radius: 5px;
+            padding: 60px 40px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .innovation-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .innovation-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .innovation-subtitle {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .innovation-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 50px;
+            align-items: start;
+        }
+
+        .research-projects {
+            background: white;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .project-card {
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            border-left: 4px solid #4CAF50;
+            border-radius: 5px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .project-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .project-phase {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .project-phase.pilot-testing {
+            background: #ff9800;
+        }
+
+        .project-phase.research-phase {
+            background: #2196f3;
+        }
+
+        .project-phase.manufacturing-phase {
+            background: #4CAF50;
+        }
+
+        .project-expected {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .innovation-services {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .service-card {
+            background: #f8f9fa;
+            border-radius: 5px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .service-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .service-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .service-button {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .service-button:hover {
+            background: #555;
+        }
+        
+        /* Contact Section */
+        .contact-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+            border-radius: 5px;
+            padding: 60px 40px;
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .contact-section::before {
+            content: '';
+            position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            background: #ff4444;
-            color: white;
-            padding: 10px;
-            z-index: 9999;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.1) 0%, transparent 50%);
+        }
+        
+        .contact-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .contact-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #1a202c;
+            background: linear-gradient(135deg, #2d3748, #1a202c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .contact-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin-bottom: 40px;
+        }
+        
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: start;
+        }
+        
+        .contact-info {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 5px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .contact-info h3 {
+            font-size: 1.5rem;
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        
+        .contact-item {
+            margin: 25px 0;
+            padding: 15px;
+            background: rgba(255, 180, 0, 0.05);
+            border-radius: 5px;
+            border-left: 3px solid #FFB400;
+        }
+        
+        .contact-item strong {
+            color: #2d3748;
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .contact-item p {
+            margin: 2px 0;
+            color: #4a5568;
+        }
+        
+        .contact-form {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 5px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: grid;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: 12px 15px;
+            border: 1.5px solid rgba(255, 180, 0, 0.3);
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #FFB400;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255, 180, 0, 0.1);
+        }
+        
+        .submit-button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #FFB400, #e6a200);
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 180, 0, 0.3);
+        }
+        
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 180, 0, 0.4);
+        }
+
+        /* Product Modal */
+        .modal {
             display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border: 1.5px solid #FFB400;
+            border-radius: 5px;
+            width: 999px;
+            height: 550px;
+            position: relative;
+            animation: slideIn 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+        }
+        
+        .modal-left {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .modal-right {
+            width: 350px;
+            background: rgba(255, 180, 0, 0.05);
+            border-left: 1.5px solid #FFB400;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #FFB400;
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .close:hover {
+            color: #e6a200;
+        }
+        
+        .modal h2 {
+            color: #333;
+            border-bottom: 1.5px solid #FFB400;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 1.8rem;
+        }
+        
+        .modal-section {
+            margin-bottom: 25px;
+        }
+        
+        .modal-section h3 {
+            color: #FFB400;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .spec-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .spec-item {
+            background: rgba(255, 180, 0, 0.1);
+            padding: 8px 12px;
+            border-radius: 5px;
+            border-left: 1.5px solid #FFB400;
+            font-size: 0.9rem;
+        }
+        
+        /* Images and Videos Section */
+        .media-section {
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .media-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .media-item {
+            border: 1.5px solid #FFB400;
+            border-radius: 5px;
+            overflow: hidden;
+            background: rgba(255, 180, 0, 0.1);
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .media-item:hover {
+            background: rgba(255, 180, 0, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .media-placeholder {
+            width: 100%;
+            height: 80px;
+            background: rgba(255, 180, 0, 0.2);
+            border: 1.5px dashed #FFB400;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFB400;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+        }
+
+        .media-image {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .media-caption {
+            font-size: 0.8rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* Smaller Request Quote Modal */
+        .quote-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .quote-modal-content {
+            background: #2d3748;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 5px;
+            width: 85%;
+            max-width: 500px;
+            max-height: 85vh;
+            position: relative;
+            animation: slideIn 0.3s ease;
+            color: white;
+            overflow: hidden;
+        }
+
+        .quote-modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quote-modal-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: white;
+            margin: 0;
+        }
+
+        .quote-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .quote-modal-body {
+            padding: 25px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .quote-form-group {
+            margin-bottom: 15px;
+        }
+
+        .quote-form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .quote-form-input,
+        .quote-form-select,
+        .quote-form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #4a5568;
+            border-radius: 4px;
+            background: #4a5568;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .quote-form-input::placeholder,
+        .quote-form-textarea::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .quote-form-input:focus,
+        .quote-form-select:focus,
+        .quote-form-textarea:focus {
+            outline: none;
+            border-color: #48CAE4;
+        }
+
+        .quote-form-textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .quote-submit-button {
+            width: 100%;
+            padding: 12px;
+            background: #48CAE4;
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .quote-submit-button:hover {
+            background: #0077B6;
+            color: white;
         }
 
         /* Admin Panel Styles */
+        .admin-view {
+            display: none;
+        }
+
+        .admin-view.active {
+            display: block;
+        }
+        
         .admin-container {
             display: flex;
             min-height: 100vh;
@@ -84,7 +815,6 @@
             text-decoration: none;
             transition: all 0.3s ease;
             border-left: 3px solid transparent;
-            cursor: pointer;
         }
         
         .sidebar-menu a:hover,
@@ -489,23 +1219,11 @@
             font-size: 12px;
         }
 
-        /* Loading States */
-        .loading {
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        .loading::after {
-            content: "Loading...";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 180, 0, 0.9);
-            color: #333;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: 600;
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.2rem;
         }
         
         @keyframes fadeIn {
@@ -522,238 +1240,495 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
+
+            .innovation-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .quote-modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+            
+            .contact-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .contact-title {
+                font-size: 2.2rem;
+            }
+            
+            .contact-section {
+                padding: 40px 20px;
+            }
+
+            .innovation-section {
+                padding: 40px 20px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                height: 80vh;
+                flex-direction: column;
+            }
+            
+            .modal-right {
+                width: 100%;
+                border-left: none;
+                border-top: 1.5px solid #FFB400;
+            }
+            
+            .spec-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .media-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Debug Panel -->
-    <div class="debug-panel" id="debugPanel"></div>
+    <!-- Mode Toggle Button -->
+    <button class="mode-toggle" onclick="toggleMode()" id="modeToggle">Switch to Admin</button>
 
-    <div class="admin-container">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-            <div class="sidebar-header">
-                <h2>Admin Panel</h2>
-                <p>Advanced Commodity System</p>
+    <!-- Frontend View -->
+    <div class="frontend-view active" id="frontendView">
+        <div class="frontend-container">
+            <!-- Search Section -->
+            <div class="search-section">
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search products, categories, or specifications..." id="searchInput">
+                    <button class="search-button" onclick="searchProducts()">Search</button>
+                </div>
+                
+                <div class="category-filters" id="categoryFilters">
+                    <!-- Filters will be loaded dynamically -->
+                </div>
             </div>
-            <ul class="sidebar-menu">
-                <li><a href="#" class="menu-link active" data-section="dashboard" onclick="switchSection('dashboard')">🏠 <span>Dashboard</span></a></li>
-                <li><a href="#" class="menu-link" data-section="products" onclick="switchSection('products')">📦 <span>Products</span></a></li>
-                <li><a href="#" class="menu-link" data-section="categories" onclick="switchSection('categories')">📋 <span>Categories</span></a></li>
-                <li><a href="#" class="menu-link" data-section="innovation" onclick="switchSection('innovation')">🔬 <span>Innovation Lab</span></a></li>
-                <li><a href="#" class="menu-link" data-section="inquiries" onclick="switchSection('inquiries')">📞 <span>Inquiries</span></a></li>
-                <li><a href="#" class="menu-link" data-section="contacts" onclick="switchSection('contacts')">✉️ <span>Contact Settings</span></a></li>
-            </ul>
-        </nav>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="main-header">
-                <h1 id="pageTitle">Dashboard</h1>
-                <div class="user-info">
-                    <div class="user-avatar">A</div>
-                    <span>Admin User</span>
-                </div>
-            </header>
+            <!-- Product Categories Grid -->
+            <div class="products-grid" id="productsGrid">
+                <!-- Categories will be loaded dynamically -->
+            </div>
 
-            <!-- Dashboard Section -->
-            <section id="dashboard" class="content-section active">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalProducts">0</div>
-                        <div class="stat-label">Total Products</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalCategories">0</div>
-                        <div class="stat-label">Categories</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalProjects">0</div>
-                        <div class="stat-label">R&D Projects</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalInquiries">0</div>
-                        <div class="stat-label">Total Inquiries</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Products Section -->
-            <section id="products" class="content-section">
-                <div class="table-container">
-                    <div class="table-header">
-                        <h3>Advanced Product Management</h3>
-                        <button class="add-btn" onclick="openProductModal()">Add Product</button>
-                    </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Product Name</th>
-                                <th>Category</th>
-                                <th>Monthly Capacity</th>
-                                <th>Price</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="productsTable">
-                            <!-- Products will be loaded here -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Categories Section -->
-            <section id="categories" class="content-section">
-                <div class="table-container">
-                    <div class="table-header">
-                        <h3>Category Management</h3>
-                        <button class="add-btn" onclick="openCategoryModal()">Add Category</button>
-                    </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Category Name</th>
-                                <th>Products Count</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="categoriesTable">
-                            <!-- Categories will be loaded here -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+            <!-- No Results Message -->
+            <div id="noResults" class="no-results" style="display: none;">
+                No products found matching your search criteria.
+            </div>
 
             <!-- Innovation Lab Section -->
-            <section id="innovation" class="content-section">
-                <div class="table-container">
-                    <div class="table-header">
-                        <h3>Innovation Lab - Research Projects</h3>
-                        <button class="add-btn" onclick="openProjectModal()" id="addProjectBtn">Add Project</button>
-                    </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Project Title</th>
-                                <th>Phase</th>
-                                <th>Expected Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="projectsTable">
-                            <!-- Projects will be loaded here -->
-                        </tbody>
-                    </table>
+            <div class="innovation-section">
+                <div class="innovation-header">
+                    <h2 class="innovation-title">Innovation Lab</h2>
+                    <p class="innovation-subtitle">Pioneering research and development for next-generation sustainable materials</p>
                 </div>
-            </section>
 
-            <!-- Inquiries Section -->
-            <section id="inquiries" class="content-section">
-                <div class="table-container">
-                    <div class="table-header">
-                        <h3>Customer Inquiries</h3>
+                <div class="innovation-content">
+                    <div class="research-projects">
+                        <h3 class="section-title">Current Research Projects</h3>
+                        <div id="researchProjectsContainer">
+                            <!-- Projects will be loaded dynamically -->
+                        </div>
                     </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Company</th>
-                                <th>Contact</th>
-                                <th>Interest</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inquiriesTable">
-                            <!-- Inquiries will be loaded here -->
-                        </tbody>
-                    </table>
+
+                    <div class="innovation-services">
+                        <div class="service-card">
+                            <h4 class="service-title">Custom Material Development</h4>
+                            <p class="service-description">Collaborate with our R&D team to develop materials tailored to your specific requirements.</p>
+                            <button class="service-button" onclick="openQuoteModal('Custom Material Development')">Start Project</button>
+                        </div>
+
+                        <div class="service-card">
+                            <h4 class="service-title">Pilot Programs</h4>
+                            <p class="service-description">Test our materials in your production environment with comprehensive support.</p>
+                            <button class="service-button" onclick="openQuoteModal('Pilot Program')">Learn More</button>
+                        </div>
+                    </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- Contact Settings Section -->
-            <section id="contacts" class="content-section">
-                <div class="table-container">
-                    <div class="table-header">
-                        <h3>Contact Information Settings</h3>
-                    </div>
-                    <div style="padding: 25px;">
-                        <form id="contactSettingsForm" onsubmit="saveContactSettings(event)">
-                            <div class="form-section">
-                                <h4>Sales & Inquiries</h4>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label class="form-label">Sales Email</label>
-                                        <input type="email" class="form-input" name="salesEmail" value="sales@commoditytrading.com" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Sales Phone</label>
-                                        <input type="text" class="form-input" name="salesPhone" value="+91-11-2345-6789" required>
-                                    </div>
-                                </div>
+            <!-- Contact Section -->
+            <div class="contact-section">
+                <div class="contact-content">
+                    <h2 class="contact-title">Get in Touch</h2>
+                    <p class="contact-subtitle">Ready to transform your supply chain with sustainable materials?</p>
+                    
+                    <div class="contact-grid">
+                        <div class="contact-info">
+                            <h3>Contact Information</h3>
+                            <div class="contact-item">
+                                <strong>Sales & Inquiries</strong>
+                                <p id="salesEmail">sales@commoditytrading.com</p>
+                                <p id="salesPhone">+91-11-2345-6789</p>
                             </div>
-                            
-                            <div class="form-section">
-                                <h4>Technical Support</h4>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label class="form-label">Technical Email</label>
-                                        <input type="email" class="form-input" name="techEmail" value="technical@commoditytrading.com" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Technical Phone</label>
-                                        <input type="text" class="form-input" name="techPhone" value="+91-11-2345-6790" required>
-                                    </div>
-                                </div>
+                            <div class="contact-item">
+                                <strong>Technical Support</strong>
+                                <p id="techEmail">technical@commoditytrading.com</p>
+                                <p id="techPhone">+91-11-2345-6790</p>
                             </div>
-                            
-                            <div class="form-section">
-                                <h4>R&D Partnerships</h4>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label class="form-label">R&D Email</label>
-                                        <input type="email" class="form-input" name="rdEmail" value="innovation@commoditytrading.com" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">R&D Phone</label>
-                                        <input type="text" class="form-input" name="rdPhone" value="+91-11-2345-6791" required>
-                                    </div>
-                                </div>
+                            <div class="contact-item">
+                                <strong>R&D Partnerships</strong>
+                                <p id="rdEmail">innovation@commoditytrading.com</p>
+                                <p id="rdPhone">+91-11-2345-6791</p>
                             </div>
-                            
-                            <div class="form-section">
-                                <h4>Email Recipients for Inquiries</h4>
-                                <div class="form-row-full">
-                                    <div class="form-group">
-                                        <label class="form-label">Primary Recipient Email</label>
-                                        <input type="email" class="form-input" name="primaryRecipient" value="admin@commoditytrading.com" required>
-                                        <small style="color: #666;">All customer inquiries will be sent to this email</small>
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label class="form-label">CC Email 1 (Optional)</label>
-                                        <input type="email" class="form-input" name="ccEmail1" value="">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">CC Email 2 (Optional)</label>
-                                        <input type="email" class="form-input" name="ccEmail2" value="">
-                                    </div>
-                                </div>
+                        </div>
+                        
+                        <form class="contact-form" onsubmit="submitForm(event)">
+                            <div class="form-group">
+                                <label class="form-label">Company Name</label>
+                                <input type="text" class="form-input" name="company" required>
                             </div>
-                            
-                            <div style="margin-top: 30px;">
-                                <button type="submit" class="btn-primary">Save Contact Settings</button>
+                            <div class="form-group">
+                                <label class="form-label">Contact Person</label>
+                                <input type="text" class="form-input" name="contact" required>
                             </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Interest Area</label>
+                                <select class="form-select" name="interest" required>
+                                    <option value="">Select Category</option>
+                                    <!-- Options will be loaded dynamically -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Message</label>
+                                <textarea class="form-textarea" rows="4" name="message" required></textarea>
+                            </div>
+                            <button type="submit" class="submit-button">Send Message</button>
                         </form>
                     </div>
                 </div>
-            </section>
-        </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin View -->
+    <div class="admin-view" id="adminView">
+        <div class="admin-container">
+            <!-- Sidebar -->
+            <nav class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Admin Panel</h2>
+                    <p>Advanced Commodity System</p>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="menu-link active" data-section="dashboard">🏠 <span>Dashboard</span></a></li>
+                    <li><a href="#" class="menu-link" data-section="products">📦 <span>Products</span></a></li>
+                    <li><a href="#" class="menu-link" data-section="categories">📋 <span>Categories</span></a></li>
+                    <li><a href="#" class="menu-link" data-section="innovation">🔬 <span>Innovation Lab</span></a></li>
+                    <li><a href="#" class="menu-link" data-section="inquiries">📞 <span>Inquiries</span></a></li>
+                    <li><a href="#" class="menu-link" data-section="contacts">✉️ <span>Contact Settings</span></a></li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Header -->
+                <header class="main-header">
+                    <h1 id="pageTitle">Dashboard</h1>
+                    <div class="user-info">
+                        <div class="user-avatar">A</div>
+                        <span>Admin User</span>
+                    </div>
+                </header>
+
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="content-section active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalProducts">0</div>
+                            <div class="stat-label">Total Products</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalCategories">0</div>
+                            <div class="stat-label">Categories</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalProjects">0</div>
+                            <div class="stat-label">R&D Projects</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalInquiries">0</div>
+                            <div class="stat-label">Total Inquiries</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Products Section -->
+                <section id="products" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Advanced Product Management</h3>
+                            <button class="add-btn" onclick="openProductModal()">Add Product</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Monthly Capacity</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTable">
+                                <!-- Products will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Categories Section -->
+                <section id="categories" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Category Management</h3>
+                            <button class="add-btn" onclick="openCategoryModal()">Add Category</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Category Name</th>
+                                    <th>Products Count</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categoriesTable">
+                                <!-- Categories will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Innovation Lab Section -->
+                <section id="innovation" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Innovation Lab - Research Projects</h3>
+                            <button class="add-btn" onclick="openProjectModal()" id="addProjectBtn">Add Project</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Project Title</th>
+                                    <th>Phase</th>
+                                    <th>Expected Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsTable">
+                                <!-- Projects will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Inquiries Section -->
+                <section id="inquiries" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Customer Inquiries</h3>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Company</th>
+                                    <th>Contact</th>
+                                    <th>Interest</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inquiriesTable">
+                                <!-- Inquiries will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Contact Settings Section -->
+                <section id="contacts" class="content-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Contact Information Settings</h3>
+                        </div>
+                        <div style="padding: 25px;">
+                            <form id="contactSettingsForm" onsubmit="saveContactSettings(event)">
+                                <div class="form-section">
+                                    <h4>Sales & Inquiries</h4>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label class="form-label">Sales Email</label>
+                                            <input type="email" class="form-input" name="salesEmail" value="sales@commoditytrading.com" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Sales Phone</label>
+                                            <input type="text" class="form-input" name="salesPhone" value="+91-11-2345-6789" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h4>Technical Support</h4>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label class="form-label">Technical Email</label>
+                                            <input type="email" class="form-input" name="techEmail" value="technical@commoditytrading.com" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Technical Phone</label>
+                                            <input type="text" class="form-input" name="techPhone" value="+91-11-2345-6790" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h4>R&D Partnerships</h4>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label class="form-label">R&D Email</label>
+                                            <input type="email" class="form-input" name="rdEmail" value="innovation@commoditytrading.com" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">R&D Phone</label>
+                                            <input type="text" class="form-input" name="rdPhone" value="+91-11-2345-6791" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h4>Email Recipients for Inquiries</h4>
+                                    <div class="form-row-full">
+                                        <div class="form-group">
+                                            <label class="form-label">Primary Recipient Email</label>
+                                            <input type="email" class="form-input" name="primaryRecipient" value="admin@commoditytrading.com" required>
+                                            <small style="color: #666;">All customer inquiries will be sent to this email</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label class="form-label">CC Email 1 (Optional)</label>
+                                            <input type="email" class="form-input" name="ccEmail1" value="">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">CC Email 2 (Optional)</label>
+                                            <input type="email" class="form-input" name="ccEmail2" value="">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-top: 30px;">
+                                    <button type="submit" class="btn-primary">Save Contact Settings</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Product Modal (Frontend) -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('productModal')">&times;</span>
+            <div class="modal-left" id="modalLeft"></div>
+            <div class="modal-right" id="modalRight"></div>
+        </div>
+    </div>
+
+    <!-- Request Quote Modal -->
+    <div id="quoteModal" class="quote-modal">
+        <div class="quote-modal-content">
+            <div class="quote-modal-header">
+                <h2>Request Quote</h2>
+                <button class="quote-close" onclick="closeQuoteModal()">&times;</button>
+            </div>
+            <div class="quote-modal-body">
+                <form id="quoteForm" onsubmit="submitQuoteForm(event)">
+                    <div class="quote-form-group">
+                        <label class="quote-form-label">Company Name</label>
+                        <input type="text" class="quote-form-input" name="company" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label class="quote-form-label">Contact Person</label>
+                        <input type="text" class="quote-form-input" name="contact" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label class="quote-form-label">Email</label>
+                        <input type="email" class="quote-form-input" name="email" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label class="quote-form-label">Material of Interest</label>
+                        <select class="quote-form-select" name="material" required>
+                            <option value="">Select Material</option>
+                            <!-- Options will be loaded dynamically -->
+                        </select>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label class="quote-form-label">Volume Required (tons/month)</label>
+                        <input type="text" class="quote-form-input" name="volume" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label class="quote-form-label">Timeline</label>
+                        <select class="quote-form-select" name="timeline" required>
+                            <option value="">Select Timeline</option>
+                            <option value="immediate">Immediate (0-30 days)</option>
+                            <option value="short">Short-term (1-3 months)</option>
+                            <option value="medium">Medium-term (3-6 months)</option>
+                            <option value="long">Long-term (6+ months)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label class="quote-form-label">Additional Requirements</label>
+                        <textarea class="quote-form-textarea" rows="3" name="requirements" placeholder="Specific technical requirements, certifications needed, etc."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="quote-submit-button">Submit Inquiry</button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Enhanced Product Modal (Admin) -->
@@ -909,208 +1884,429 @@
         </div>
     </div>
 
+    <!-- Category Modal (Admin) -->
+    <div id="adminCategoryModal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 id="categoryModalTitle">Add New Category</h3>
+                <button class="admin-modal-close" onclick="closeAdminModal('adminCategoryModal')">&times;</button>
+            </div>
+            <div class="admin-modal-body">
+                <form id="categoryForm">
+                    <input type="hidden" id="categoryId" name="id">
+                    <div class="form-group">
+                        <label class="form-label">Category Name</label>
+                        <input type="text" class="form-input" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" name="description" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group" style="display: flex; gap: 15px; margin-top: 30px;">
+                        <button type="submit" class="btn-primary">Save Category</button>
+                        <button type="button" class="btn-secondary" onclick="closeAdminModal('adminCategoryModal')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Modal (Admin) -->
+    <div id="adminProjectModal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 id="projectModalTitle">Add New Project</h3>
+                <button class="admin-modal-close" onclick="closeAdminModal('adminProjectModal')">&times;</button>
+            </div>
+            <div class="admin-modal-body">
+                <form id="projectForm">
+                    <input type="hidden" id="projectId" name="id">
+                    <div class="form-group">
+                        <label class="form-label">Project Title</label>
+                        <input type="text" class="form-input" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phase</label>
+                        <select class="form-select" name="phase" required>
+                            <option value="">Select Phase</option>
+                            <option value="Manufacturing phase">Manufacturing phase</option>
+                            <option value="Pilot testing">Pilot testing</option>
+                            <option value="Research phase">Research phase</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Expected Date</label>
+                        <input type="text" class="form-input" name="expectedDate" placeholder="e.g., Q2 2026" required>
+                    </div>
+                    <div class="form-group" style="display: flex; gap: 15px; margin-top: 30px;">
+                        <button type="submit" class="btn-primary">Save Project</button>
+                        <button type="button" class="btn-secondary" onclick="closeAdminModal('adminProjectModal')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inquiry Edit Modal -->
+    <div id="inquiryEditModal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3>Edit Inquiry Email Settings</h3>
+                <button class="admin-modal-close" onclick="closeAdminModal('inquiryEditModal')">&times;</button>
+            </div>
+            <div class="admin-modal-body">
+                <form id="inquiryEditForm">
+                    <input type="hidden" id="inquiryIndex" name="index">
+                    <div class="form-group">
+                        <label class="form-label">Primary Recipient Email</label>
+                        <input type="email" class="form-input" name="primaryRecipient" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CC Email 1 (Optional)</label>
+                        <input type="email" class="form-input" name="ccEmail1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CC Email 2 (Optional)</label>
+                        <input type="email" class="form-input" name="ccEmail2">
+                    </div>
+                    <div class="form-group" style="display: flex; gap: 15px; margin-top: 30px;">
+                        <button type="submit" class="btn-primary">Update Email Settings</button>
+                        <button type="button" class="btn-secondary" onclick="closeAdminModal('inquiryEditModal')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Debug function
-        function showDebug(message) {
-            const debugPanel = document.getElementById('debugPanel');
-            debugPanel.textContent = `DEBUG: ${message}`;
-            debugPanel.style.display = 'block';
-            setTimeout(() => {
-                debugPanel.style.display = 'none';
-            }, 5000);
-        }
-
-        // Initialize Supabase client
-        console.log('Initializing Supabase client...');
-        const SUPABASE_URL = "https://kunrarieegagtkxiudfa.supabase.co ";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI";
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('Supabase client initialized');
-
-        // Global data manager
-        let dataManager;
-
-        // Enhanced Data Management System
+        // Enhanced Data Management System with Innovation Lab
         class AdvancedDataManager {
             constructor() {
-                console.log('Creating AdvancedDataManager...');
-                this.products = {};
-                this.categories = {};
-                this.projects = {};
-                this.inquiries = [];
-                this.contactSettings = {};
-                this.loadDataFromSupabase();
+                this.initializeData();
+                this.loadData();
+                this.updateStats();
+                this.renderFrontend();
+                this.renderAdmin();
+                this.loadContactSettings();
             }
 
-            async loadDataFromSupabase() {
-                try {
-                    console.log('Loading data from Supabase...');
-                    showDebug('Loading data from database...');
-
-                    // Load products
-                    console.log('Loading products...');
-                    const { data: productsData, error: productsError } = await supabaseClient
-                        .from('products')
-                        .select('*');
-                    
-                    if (productsError) {
-                        console.error('Products error:', productsError);
-                        showDebug(`Products error: ${productsError.message}`);
-                        throw productsError;
+            initializeData() {
+                // Default enhanced product data
+                const defaultProducts = {
+                    'poultry-protein': {
+                        id: 'poultry-protein',
+                        title: 'Poultry Waste-Derived Protein',
+                        category: 'proteins',
+                        overview: 'High-quality protein extracted from poultry waste using advanced processing techniques. Suitable for animal feed, aquaculture, and industrial applications.',
+                        specifications: {
+                            'Protein Content': '65-70%',
+                            'Moisture': '≤ 10%',
+                            'Fat Content': '≤ 12%',
+                            'Ash Content': '≤ 15%',
+                            'Fiber': '≤ 3%',
+                            'pH': '6.0-7.0',
+                            'Salmonella': 'Negative',
+                            'E.coli': '< 10 CFU/g'
+                        },
+                        applications: [
+                            'Animal feed supplement',
+                            'Aquaculture nutrition',
+                            'Pet food ingredient',
+                            'Organic fertilizer component'
+                        ],
+                        capacity: {
+                            'Monthly Capacity': '50 tons',
+                            'Annual Capacity': '600 tons',
+                            'Price': '$2,200/tonne',
+                            'Lead Time': '7-14 days'
+                        },
+                        media: {},
+                        environmentalImpact: 'Sustainable production with zero-waste manufacturing processes.',
+                        qualityAssurance: 'Rigorous testing and quality certificates provided with each shipment.',
+                        visible: true
+                    },
+                    'red-mud-pellets': {
+                        id: 'red-mud-pellets',
+                        title: 'Red Mud Pellets (ROSTA PELLET)',
+                        category: 'catalysts',
+                        overview: 'Premium iron ore pellets manufactured from processed red mud (bauxite residue) using advanced beneficiation techniques.',
+                        specifications: {
+                            'Total Iron (Fe)': '70-72%',
+                            'SiO₂ + Al₂O₃': '≤ 1.2%',
+                            'Phosphorus (P₂O₅)': '≤ 0.006%',
+                            'Sulfur (S)': '≤ 0.005%',
+                            'TiO₂': '≤ 0.10%',
+                            'CaO': '≤ 1.2%',
+                            'MgO': '≤ 0.50%',
+                            'Particle Size': '6-16 mm'
+                        },
+                        applications: [
+                            'Direct Reduced Iron (DRI) production',
+                            'Hydrogen-based steelmaking',
+                            'Electric Arc Furnace (EAF) feedstock',
+                            'Green steel production initiatives'
+                        ],
+                        capacity: {
+                            'Monthly Capacity': '500 tons',
+                            'Annual Capacity': '6,000 tons',
+                            'Price': '$145/tonne',
+                            'Lead Time': '15-30 days'
+                        },
+                        media: {},
+                        environmentalImpact: 'Sustainable production with zero-waste manufacturing processes.',
+                        qualityAssurance: 'Rigorous testing and quality certificates provided with each shipment.',
+                        visible: true
                     }
-                    
-                    console.log(`Loaded ${productsData.length} products`);
-                    this.products = {};
-                    productsData.forEach(product => {
-                        this.products[product.id] = {
-                            id: product.id,
-                            title: product.title,
-                            category: product.category,
-                            overview: product.overview,
-                            specifications: product.specifications || {},
-                            applications: product.applications || [],
-                            capacity: product.capacity || {},
-                            media: product.media || {},
-                            environmentalImpact: product.environmentalImpact || '',
-                            qualityAssurance: product.qualityAssurance || '',
-                            visible: product.visible !== false
-                        };
-                    });
+                };
 
-                    // Load categories
-                    console.log('Loading categories...');
-                    const { data: categoriesData, error: categoriesError } = await supabaseClient
-                        .from('categories')
-                        .select('*');
-                    
-                    if (categoriesError) {
-                        console.error('Categories error:', categoriesError);
-                        showDebug(`Categories error: ${categoriesError.message}`);
-                        throw categoriesError;
+                // Default categories
+                const defaultCategories = {
+                    'proteins': {
+                        id: 'proteins',
+                        name: 'Sustainable Proteins',
+                        description: 'High-quality proteins derived from waste sources for various industrial applications',
+                        visible: true
+                    },
+                    'catalysts': {
+                        id: 'catalysts',
+                        name: 'Advanced Catalysts',
+                        description: 'Innovative catalysts from industrial waste streams for green manufacturing',
+                        visible: true
+                    },
+                    'manufacturing': {
+                        id: 'manufacturing',
+                        name: 'Green Manufacturing Inputs',
+                        description: 'Raw materials specifically designed for sustainable manufacturing processes',
+                        visible: true
+                    },
+                    'compost': {
+                        id: 'compost',
+                        name: 'Sustainable Compost & Amendments',
+                        description: 'Premium compost and soil amendments from various organic waste sources',
+                        visible: true
                     }
-                    
-                    console.log(`Loaded ${categoriesData.length} categories`);
-                    this.categories = {};
-                    categoriesData.forEach(category => {
-                        this.categories[category.id] = {
-                            id: category.id,
-                            name: category.name,
-                            description: category.description,
-                            visible: category.visible !== false
-                        };
-                    });
+                };
 
-                    // Load projects
-                    console.log('Loading projects...');
-                    const { data: projectsData, error: projectsError } = await supabaseClient
-                        .from('projects')
-                        .select('*');
-                    
-                    if (projectsError) {
-                        console.error('Projects error:', projectsError);
-                        showDebug(`Projects error: ${projectsError.message}`);
-                        throw projectsError;
+                // Default research projects - CHANGED "Development phase" TO "Manufacturing phase"
+                const defaultProjects = {
+                    'project1': {
+                        id: 'project1',
+                        title: 'Next-Gen Protein Extraction',
+                        phase: 'Manufacturing phase',
+                        expectedDate: 'Q2 2026',
+                        visible: true
+                    },
+                    'project2': {
+                        id: 'project2',
+                        title: 'Advanced Metal Recovery Systems',
+                        phase: 'Pilot testing',
+                        expectedDate: 'Q4 2025',
+                        visible: true
+                    },
+                    'project3': {
+                        id: 'project3',
+                        title: 'Waste-to-Energy Catalysts',
+                        phase: 'Research phase',
+                        expectedDate: 'Q3 2026',
+                        visible: true
                     }
-                    
-                    console.log(`Loaded ${projectsData.length} projects`);
-                    this.projects = {};
-                    projectsData.forEach(project => {
-                        this.projects[project.id] = {
-                            id: project.id,
-                            title: project.title,
-                            phase: project.phase,
-                            expectedDate: project.expectedDate,
-                            visible: project.visible !== false
-                        };
-                    });
+                };
 
-                    // Load inquiries
-                    console.log('Loading inquiries...');
-                    const { data: inquiriesData, error: inquiriesError } = await supabaseClient
-                        .from('inquiries')
-                        .select('*');
-                    
-                    if (inquiriesError) {
-                        console.error('Inquiries error:', inquiriesError);
-                        showDebug(`Inquiries error: ${inquiriesError.message}`);
-                        throw inquiriesError;
-                    }
-                    
-                    console.log(`Loaded ${inquiriesData.length} inquiries`);
-                    this.inquiries = inquiriesData.map(inquiry => ({
-                        id: inquiry.id,
-                        company: inquiry.company,
-                        contact: inquiry.contact,
-                        email: inquiry.email,
-                        interest: inquiry.interest,
-                        message: inquiry.message,
-                        material: inquiry.material || '',
-                        volume: inquiry.volume || '',
-                        timeline: inquiry.timeline || '',
-                        requirements: inquiry.requirements || '',
-                        date: inquiry.date || new Date().toISOString(),
-                        status: inquiry.status || 'New',
-                        recipients: inquiry.recipients || {
-                            primary: 'admin@commoditytrading.com',
-                            cc: []
-                        }
-                    }));
+                // Default contact settings
+                const defaultContactSettings = {
+                    salesEmail: 'sales@commoditytrading.com',
+                    salesPhone: '+91-11-2345-6789',
+                    techEmail: 'technical@commoditytrading.com',
+                    techPhone: '+91-11-2345-6790',
+                    rdEmail: 'innovation@commoditytrading.com',
+                    rdPhone: '+91-11-2345-6791',
+                    primaryRecipient: 'admin@commoditytrading.com',
+                    ccEmail1: '',
+                    ccEmail2: ''
+                };
 
-                    // Load contact settings
-                    console.log('Loading contact settings...');
-                    const { data: contactsData, error: contactsError } = await supabaseClient
-                        .from('contact_settings')
-                        .select('*')
-                        .single();
-                    
-                    if (contactsError && contactsError.code !== 'PGRST116') {
-                        console.error('Contact settings error:', contactsError);
-                        showDebug(`Contact settings error: ${contactsError.message}`);
-                        throw contactsError;
-                    }
-                    
-                    if (contactsData) {
-                        console.log('Loaded contact settings');
-                        this.contactSettings = contactsData;
-                    } else {
-                        console.log('Using default contact settings');
-                        // Default contact settings
-                        this.contactSettings = {
-                            salesEmail: 'sales@commoditytrading.com',
-                            salesPhone: '+91-11-2345-6789',
-                            techEmail: 'technical@commoditytrading.com',
-                            techPhone: '+91-11-2345-6790',
-                            rdEmail: 'innovation@commoditytrading.com',
-                            rdPhone: '+91-11-2345-6791',
-                            primaryRecipient: 'admin@commoditytrading.com',
-                            ccEmail1: '',
-                            ccEmail2: ''
-                        };
-                    }
-
-                    console.log('Data loaded successfully');
-                    showDebug('Data loaded successfully!');
-                    this.updateStats();
-                    this.renderAdmin();
-                    this.loadContactSettings();
-                    
-                } catch (error) {
-                    console.error('Error loading data from Supabase:', error);
-                    showDebug(`Error loading data: ${error.message}`);
+                // Initialize if not exists
+                if (!localStorage.getItem('products')) {
+                    localStorage.setItem('products', JSON.stringify(defaultProducts));
+                }
+                if (!localStorage.getItem('categories')) {
+                    localStorage.setItem('categories', JSON.stringify(defaultCategories));
+                }
+                if (!localStorage.getItem('projects')) {
+                    localStorage.setItem('projects', JSON.stringify(defaultProjects));
+                }
+                if (!localStorage.getItem('inquiries')) {
+                    localStorage.setItem('inquiries', JSON.stringify([]));
+                }
+                if (!localStorage.getItem('contactSettings')) {
+                    localStorage.setItem('contactSettings', JSON.stringify(defaultContactSettings));
                 }
             }
 
+            loadData() {
+                this.products = JSON.parse(localStorage.getItem('products') || '{}');
+                this.categories = JSON.parse(localStorage.getItem('categories') || '{}');
+                this.projects = JSON.parse(localStorage.getItem('projects') || '{}');
+                this.inquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+                this.contactSettings = JSON.parse(localStorage.getItem('contactSettings') || '{}');
+            }
+
+            saveData() {
+                localStorage.setItem('products', JSON.stringify(this.products));
+                localStorage.setItem('categories', JSON.stringify(this.categories));
+                localStorage.setItem('projects', JSON.stringify(this.projects));
+                localStorage.setItem('inquiries', JSON.stringify(this.inquiries));
+                localStorage.setItem('contactSettings', JSON.stringify(this.contactSettings));
+            }
+
             updateStats() {
-                console.log('Updating stats...');
                 document.getElementById('totalProducts').textContent = Object.keys(this.products).length;
                 document.getElementById('totalCategories').textContent = Object.keys(this.categories).length;
                 document.getElementById('totalProjects').textContent = Object.keys(this.projects).length;
                 document.getElementById('totalInquiries').textContent = this.inquiries.length;
             }
 
+            getVisibleProducts() {
+                return Object.values(this.products).filter(product => product.visible);
+            }
+
+            getVisibleCategories() {
+                return Object.values(this.categories).filter(category => category.visible);
+            }
+
+            getVisibleProjects() {
+                return Object.values(this.projects).filter(project => project.visible);
+            }
+
+            getProductsByCategory(categoryId) {
+                return this.getVisibleProducts().filter(product => product.category === categoryId);
+            }
+
+            // Frontend rendering
+            renderFrontend() {
+                this.renderProducts();
+                this.renderFilters();
+                this.renderProjects();
+                this.loadContactCategoryOptions();
+                this.loadQuoteCategoryOptions();
+                this.updateContactInfo();
+            }
+
+            renderProducts() {
+                const grid = document.getElementById('productsGrid');
+                const categories = this.getVisibleCategories();
+                
+                grid.innerHTML = '';
+
+                categories.forEach(category => {
+                    const products = this.getProductsByCategory(category.id);
+                    
+                    if (products.length === 0) return;
+                    
+                    const categoryCard = document.createElement('div');
+                    categoryCard.className = 'category-card';
+                    categoryCard.setAttribute('data-category', category.id);
+                    categoryCard.onclick = () => openCategory(category.id);
+
+                    categoryCard.innerHTML = `
+                        <div class="category-header">
+                            <h3 class="category-title">${category.name}</h3>
+                            <span class="product-count">${products.length} products</span>
+                        </div>
+                        <p>${category.description}</p>
+                        <ul class="product-list">
+                            ${products.map(product => `
+                                <li class="product-item" onclick="event.stopPropagation(); openProductModal('${product.id}')">
+                                    <div class="product-name">${product.title}</div>
+                                    <div class="product-capacity">Capacity: ${product.capacity['Monthly Capacity'] || 'N/A'}</div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    `;
+
+                    grid.appendChild(categoryCard);
+                });
+            }
+
+            renderFilters() {
+                const filtersContainer = document.getElementById('categoryFilters');
+                const categories = this.getVisibleCategories();
+
+                filtersContainer.innerHTML = `
+                    <button class="filter-btn active" onclick="filterCategory('all')">All Categories</button>
+                    ${categories.map(category => `
+                        <button class="filter-btn" onclick="filterCategory('${category.id}')">${category.name}</button>
+                    `).join('')}
+                `;
+            }
+
+            renderProjects() {
+                const container = document.getElementById('researchProjectsContainer');
+                const projects = this.getVisibleProjects();
+
+                container.innerHTML = projects.map(project => `
+                    <div class="project-card">
+                        <h4 class="project-name">${project.title}</h4>
+                        <div class="project-phase ${project.phase.toLowerCase().replace(' ', '-')}">${project.phase}</div>
+                        <div class="project-expected">Expected: ${project.expectedDate}</div>
+                    </div>
+                `).join('');
+            }
+
+            loadContactCategoryOptions() {
+                const select = document.querySelector('.contact-form select[name="interest"]');
+                const categories = this.getVisibleCategories();
+
+                select.innerHTML = `
+                    <option value="">Select Category</option>
+                    ${categories.map(category => `
+                        <option value="${category.id}">${category.name}</option>
+                    `).join('')}
+                    <option value="custom">Custom Development</option>
+                `;
+            }
+
+            loadQuoteCategoryOptions() {
+                const select = document.querySelector('#quoteForm select[name="material"]');
+                const categories = this.getVisibleCategories();
+
+                select.innerHTML = `
+                    <option value="">Select Material</option>
+                    ${categories.map(category => `
+                        <optgroup label="${category.name}">
+                            ${this.getProductsByCategory(category.id).map(product => `
+                                <option value="${product.id}">${product.title}</option>
+                            `).join('')}
+                        </optgroup>
+                    `).join('')}
+                    <option value="Custom Material Development">Custom Material Development</option>
+                    <option value="Pilot Program">Pilot Program</option>
+                `;
+            }
+
+            updateContactInfo() {
+                document.getElementById('salesEmail').textContent = this.contactSettings.salesEmail || 'sales@commoditytrading.com';
+                document.getElementById('salesPhone').textContent = this.contactSettings.salesPhone || '+91-11-2345-6789';
+                document.getElementById('techEmail').textContent = this.contactSettings.techEmail || 'technical@commoditytrading.com';
+                document.getElementById('techPhone').textContent = this.contactSettings.techPhone || '+91-11-2345-6790';
+                document.getElementById('rdEmail').textContent = this.contactSettings.rdEmail || 'innovation@commoditytrading.com';
+                document.getElementById('rdPhone').textContent = this.contactSettings.rdPhone || '+91-11-2345-6791';
+            }
+
+            loadContactSettings() {
+                const form = document.getElementById('contactSettingsForm');
+                if (form && this.contactSettings) {
+                    Object.keys(this.contactSettings).forEach(key => {
+                        const field = form.elements[key];
+                        if (field) {
+                            field.value = this.contactSettings[key] || '';
+                        }
+                    });
+                }
+            }
+
             // Admin rendering
             renderAdmin() {
-                console.log('Rendering admin...');
                 this.renderProductsAdmin();
                 this.renderCategoriesAdmin();
                 this.renderProjectsAdmin();
@@ -1119,7 +2315,6 @@
             }
 
             renderProductsAdmin() {
-                console.log('Rendering products admin...');
                 const tbody = document.getElementById('productsTable');
                 tbody.innerHTML = '';
 
@@ -1148,12 +2343,11 @@
             }
 
             renderCategoriesAdmin() {
-                console.log('Rendering categories admin...');
                 const tbody = document.getElementById('categoriesTable');
                 tbody.innerHTML = '';
 
                 Object.values(this.categories).forEach(category => {
-                    const productCount = Object.values(this.products).filter(product => product.category === category.id && product.visible).length;
+                    const productCount = this.getProductsByCategory(category.id).length;
                     const row = document.createElement('tr');
                     if (!category.visible) row.classList.add('hidden');
 
@@ -1175,7 +2369,6 @@
             }
 
             renderProjectsAdmin() {
-                console.log('Rendering projects admin...');
                 const tbody = document.getElementById('projectsTable');
                 const addBtn = document.getElementById('addProjectBtn');
                 
@@ -1212,7 +2405,6 @@
             }
 
             renderInquiriesAdmin() {
-                console.log('Rendering inquiries admin...');
                 const tbody = document.getElementById('inquiriesTable');
                 tbody.innerHTML = '';
 
@@ -1228,6 +2420,7 @@
                         <td>${inquiry.status}</td>
                         <td>
                             <button class="action-btn view-btn" onclick="viewInquiry(${index})">View</button>
+                            <button class="action-btn edit-btn" onclick="editInquiryEmail(${index})">Edit Email</button>
                         </td>
                     `;
 
@@ -1236,7 +2429,6 @@
             }
 
             loadCategoryOptions() {
-                console.log('Loading category options...');
                 const select = document.getElementById('productCategory');
                 if (!select) return;
                 
@@ -1251,8 +2443,7 @@
             }
 
             // Enhanced CRUD Operations - Products
-            async addProduct(productData) {
-                console.log('Adding product...', productData);
+            addProduct(productData) {
                 const id = productData.id || this.generateId();
                 
                 // Process specifications
@@ -1273,7 +2464,7 @@
                     });
                 }
 
-                const newProduct = {
+                this.products[id] = {
                     id: id,
                     title: productData.title,
                     category: productData.category,
@@ -1291,32 +2482,14 @@
                     qualityAssurance: productData.qualityAssurance || '',
                     visible: true
                 };
-
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('products')
-                        .insert([newProduct]);
-                    
-                    if (error) {
-                        console.error('Add product error:', error);
-                        showDebug(`Add product error: ${error.message}`);
-                        throw error;
-                    }
-                    
-                    console.log('Product added successfully');
-                    this.products[id] = newProduct;
-                    this.updateStats();
-                    this.renderAdmin();
-                    return true;
-                } catch (error) {
-                    console.error('Error adding product to Supabase:', error);
-                    showDebug(`Error adding product: ${error.message}`);
-                    return false;
-                }
+                
+                this.saveData();
+                this.updateStats();
+                this.renderFrontend();
+                this.renderAdmin();
             }
 
-            async editProduct(id, productData) {
-                console.log('Editing product...', id, productData);
+            editProduct(id, productData) {
                 if (this.products[id]) {
                     // Process specifications
                     const specifications = {};
@@ -1336,7 +2509,7 @@
                         });
                     }
 
-                    const updatedProduct = {
+                    this.products[id] = {
                         ...this.products[id],
                         title: productData.title,
                         category: productData.category,
@@ -1353,354 +2526,138 @@
                         environmentalImpact: productData.environmentalImpact || '',
                         qualityAssurance: productData.qualityAssurance || ''
                     };
-
-                    try {
-                        const { data, error } = await supabaseClient
-                            .from('products')
-                            .update(updatedProduct)
-                            .eq('id', id);
-                        
-                        if (error) {
-                            console.error('Edit product error:', error);
-                            showDebug(`Edit product error: ${error.message}`);
-                            throw error;
-                        }
-                        
-                        console.log('Product updated successfully');
-                        this.products[id] = updatedProduct;
-                        this.renderAdmin();
-                        return true;
-                    } catch (error) {
-                        console.error('Error updating product in Supabase:', error);
-                        showDebug(`Error updating product: ${error.message}`);
-                        return false;
-                    }
+                    
+                    this.saveData();
+                    this.renderFrontend();
+                    this.renderAdmin();
                 }
-                return false;
             }
 
-            async deleteProduct(id) {
-                console.log('Deleting product...', id);
+            deleteProduct(id) {
                 if (confirm('Are you sure you want to delete this product?')) {
-                    try {
-                        const { data, error } = await supabaseClient
-                            .from('products')
-                            .delete()
-                            .eq('id', id);
-                        
-                        if (error) {
-                            console.error('Delete product error:', error);
-                            showDebug(`Delete product error: ${error.message}`);
-                            throw error;
-                        }
-                        
-                        console.log('Product deleted successfully');
-                        delete this.products[id];
-                        this.updateStats();
-                        this.renderAdmin();
-                        return true;
-                    } catch (error) {
-                        console.error('Error deleting product from Supabase:', error);
-                        showDebug(`Error deleting product: ${error.message}`);
-                        return false;
-                    }
+                    delete this.products[id];
+                    this.saveData();
+                    this.updateStats();
+                    this.renderFrontend();
+                    this.renderAdmin();
                 }
-                return false;
             }
 
-            async toggleProductVisibility(id) {
-                console.log('Toggling product visibility...', id);
+            toggleProductVisibility(id) {
                 if (this.products[id]) {
                     this.products[id].visible = !this.products[id].visible;
-                    
-                    try {
-                        const { data, error } = await supabaseClient
-                            .from('products')
-                            .update({ visible: this.products[id].visible })
-                            .eq('id', id);
-                        
-                        if (error) {
-                            console.error('Toggle product visibility error:', error);
-                            showDebug(`Toggle product visibility error: ${error.message}`);
-                            throw error;
-                        }
-                        
-                        console.log('Product visibility toggled successfully');
-                        this.renderAdmin();
-                        return true;
-                    } catch (error) {
-                        console.error('Error updating product visibility in Supabase:', error);
-                        showDebug(`Error updating product visibility: ${error.message}`);
-                        return false;
-                    }
+                    this.saveData();
+                    this.renderFrontend();
+                    this.renderAdmin();
                 }
-                return false;
             }
 
             // CRUD Operations - Categories
-            async addCategory(categoryData) {
-                console.log('Adding category...', categoryData);
+            addCategory(categoryData) {
                 const id = categoryData.id || this.generateId();
-                const newCategory = {
+                this.categories[id] = {
                     id: id,
                     name: categoryData.name,
                     description: categoryData.description,
                     visible: true
                 };
-
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('categories')
-                        .insert([newCategory]);
-                    
-                    if (error) {
-                        console.error('Add category error:', error);
-                        showDebug(`Add category error: ${error.message}`);
-                        throw error;
-                    }
-                    
-                    console.log('Category added successfully');
-                    this.categories[id] = newCategory;
-                    this.updateStats();
-                    this.renderAdmin();
-                    return true;
-                } catch (error) {
-                    console.error('Error adding category to Supabase:', error);
-                    showDebug(`Error adding category: ${error.message}`);
-                    return false;
-                }
+                this.saveData();
+                this.updateStats();
+                this.renderFrontend();
+                this.renderAdmin();
             }
 
-            async editCategory(id, categoryData) {
-                console.log('Editing category...', id, categoryData);
+            editCategory(id, categoryData) {
                 if (this.categories[id]) {
-                    const updatedCategory = {
+                    this.categories[id] = {
                         ...this.categories[id],
                         name: categoryData.name,
                         description: categoryData.description
                     };
-
-                    try {
-                        const { data, error } = await supabaseClient
-                            .from('categories')
-                            .update(updatedCategory)
-                            .eq('id', id);
-                        
-                        if (error) {
-                            console.error('Edit category error:', error);
-                            showDebug(`Edit category error: ${error.message}`);
-                            throw error;
-                        }
-                        
-                        console.log('Category updated successfully');
-                        this.categories[id] = updatedCategory;
-                        this.renderAdmin();
-                        return true;
-                    } catch (error) {
-                        console.error('Error updating category in Supabase:', error);
-                        showDebug(`Error updating category: ${error.message}`);
-                        return false;
-                    }
+                    this.saveData();
+                    this.renderFrontend();
+                    this.renderAdmin();
                 }
-                return false;
             }
 
-            async deleteCategory(id) {
-                console.log('Deleting category...', id);
+            deleteCategory(id) {
                 if (confirm('Are you sure you want to delete this category?')) {
-                    try {
-                        const { data, error } = await supabaseClient
-                            .from('categories')
-                            .delete()
-                            .eq('id', id);
-                        
-                        if (error) {
-                            console.error('Delete category error:', error);
-                            showDebug(`Delete category error: ${error.message}`);
-                            throw error;
-                        }
-                        
-                        console.log('Category deleted successfully');
-                        delete this.categories[id];
-                        this.updateStats();
-                        this.renderAdmin();
-                        return true;
-                    } catch (error) {
-                        console.error('Error deleting category from Supabase:', error);
-                        showDebug(`Error deleting category: ${error.message}`);
-                        return false;
-                    }
+                    delete this.categories[id];
+                    this.saveData();
+                    this.updateStats();
+                    this.renderFrontend();
+                    this.renderAdmin();
                 }
-                return false;
             }
 
-            async toggleCategoryVisibility(id) {
-                console.log('Toggling category visibility...', id);
+            toggleCategoryVisibility(id) {
                 if (this.categories[id]) {
                     this.categories[id].visible = !this.categories[id].visible;
-                    
-                    try {
-                        const { data, error } = await supabaseClient
-                            .from('categories')
-                            .update({ visible: this.categories[id].visible })
-                            .eq('id', id);
-                        
-                        if (error) {
-                            console.error('Toggle category visibility error:', error);
-                            showDebug(`Toggle category visibility error: ${error.message}`);
-                            throw error;
-                        }
-                        
-                        console.log('Category visibility toggled successfully');
-                        this.renderAdmin();
-                        return true;
-                    } catch (error) {
-                        console.error('Error updating category visibility in Supabase:', error);
-                        showDebug(`Error updating category visibility: ${error.message}`);
-                        return false;
-                    }
+                    this.saveData();
+                    this.renderFrontend();
+                    this.renderAdmin();
                 }
-                return false;
             }
 
             // CRUD Operations - Projects
-            async addProject(projectData) {
-                console.log('Adding project...', projectData);
+            addProject(projectData) {
                 // Check if we already have 3 projects
                 if (Object.keys(this.projects).length >= 3) {
                     alert('Maximum 3 projects allowed. Please delete an existing project to add a new one.');
-                    return false;
+                    return;
                 }
                 
                 const id = projectData.id || this.generateId();
-                const newProject = {
+                this.projects[id] = {
                     id: id,
                     title: projectData.title,
                     phase: projectData.phase,
                     expectedDate: projectData.expectedDate,
                     visible: true
                 };
-
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('projects')
-                        .insert([newProject]);
-                    
-                    if (error) {
-                        console.error('Add project error:', error);
-                        showDebug(`Add project error: ${error.message}`);
-                        throw error;
-                    }
-                    
-                    console.log('Project added successfully');
-                    this.projects[id] = newProject;
-                    this.updateStats();
-                    this.renderAdmin();
-                    return true;
-                } catch (error) {
-                    console.error('Error adding project to Supabase:', error);
-                    showDebug(`Error adding project: ${error.message}`);
-                    return false;
-                }
+                this.saveData();
+                this.updateStats();
+                this.renderFrontend();
+                this.renderAdmin();
             }
 
-            async editProject(id, projectData) {
-                console.log('Editing project...', id, projectData);
+            editProject(id, projectData) {
                 if (this.projects[id]) {
-                    const updatedProject = {
+                    this.projects[id] = {
                         ...this.projects[id],
                         title: projectData.title,
                         phase: projectData.phase,
                         expectedDate: projectData.expectedDate
                     };
-
-                    try {
-                        const { data, error } = await supabaseClient
-                            .from('projects')
-                            .update(updatedProject)
-                            .eq('id', id);
-                        
-                        if (error) {
-                            console.error('Edit project error:', error);
-                            showDebug(`Edit project error: ${error.message}`);
-                            throw error;
-                        }
-                        
-                        console.log('Project updated successfully');
-                        this.projects[id] = updatedProject;
-                        this.renderAdmin();
-                        return true;
-                    } catch (error) {
-                        console.error('Error updating project in Supabase:', error);
-                        showDebug(`Error updating project: ${error.message}`);
-                        return false;
-                    }
+                    this.saveData();
+                    this.renderFrontend();
+                    this.renderAdmin();
                 }
-                return false;
             }
 
-            async deleteProject(id) {
-                console.log('Deleting project...', id);
+            deleteProject(id) {
                 if (confirm('Are you sure you want to delete this project?')) {
-                    try {
-                        const { data, error } = await supabaseClient
-                            .from('projects')
-                            .delete()
-                            .eq('id', id);
-                        
-                        if (error) {
-                            console.error('Delete project error:', error);
-                            showDebug(`Delete project error: ${error.message}`);
-                            throw error;
-                        }
-                        
-                        console.log('Project deleted successfully');
-                        delete this.projects[id];
-                        this.updateStats();
-                        this.renderAdmin();
-                        return true;
-                    } catch (error) {
-                        console.error('Error deleting project from Supabase:', error);
-                        showDebug(`Error deleting project: ${error.message}`);
-                        return false;
-                    }
+                    delete this.projects[id];
+                    this.saveData();
+                    this.updateStats();
+                    this.renderFrontend();
+                    this.renderAdmin();
                 }
-                return false;
             }
 
-            async toggleProjectVisibility(id) {
-                console.log('Toggling project visibility...', id);
+            toggleProjectVisibility(id) {
                 if (this.projects[id]) {
                     this.projects[id].visible = !this.projects[id].visible;
-                    
-                    try {
-                        const { data, error } = await supabaseClient
-                            .from('projects')
-                            .update({ visible: this.projects[id].visible })
-                            .eq('id', id);
-                        
-                        if (error) {
-                            console.error('Toggle project visibility error:', error);
-                            showDebug(`Toggle project visibility error: ${error.message}`);
-                            throw error;
-                        }
-                        
-                        console.log('Project visibility toggled successfully');
-                        this.renderAdmin();
-                        return true;
-                    } catch (error) {
-                        console.error('Error updating project visibility in Supabase:', error);
-                        showDebug(`Error updating project visibility: ${error.message}`);
-                        return false;
-                    }
+                    this.saveData();
+                    this.renderFrontend();
+                    this.renderAdmin();
                 }
-                return false;
             }
 
             // CRUD Operations - Inquiries
-            async addInquiry(inquiryData) {
-                console.log('Adding inquiry...', inquiryData);
+            addInquiry(inquiryData) {
                 const inquiry = {
+                    id: Date.now(),
                     company: inquiryData.company,
                     contact: inquiryData.contact,
                     email: inquiryData.email,
@@ -1717,65 +2674,27 @@
                         cc: [this.contactSettings.ccEmail1, this.contactSettings.ccEmail2].filter(email => email)
                     }
                 };
+                this.inquiries.push(inquiry);
+                this.saveData();
+                this.updateStats();
+                this.renderAdmin();
+            }
 
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('inquiries')
-                        .insert([inquiry]);
-                    
-                    if (error) {
-                        console.error('Add inquiry error:', error);
-                        showDebug(`Add inquiry error: ${error.message}`);
-                        throw error;
-                    }
-                    
-                    console.log('Inquiry added successfully');
-                    this.inquiries.push(inquiry);
-                    this.updateStats();
+            updateInquiryEmailSettings(index, emailSettings) {
+                if (this.inquiries[index]) {
+                    this.inquiries[index].recipients = {
+                        primary: emailSettings.primaryRecipient,
+                        cc: [emailSettings.ccEmail1, emailSettings.ccEmail2].filter(email => email)
+                    };
+                    this.saveData();
                     this.renderAdmin();
-                    return true;
-                } catch (error) {
-                    console.error('Error adding inquiry to Supabase:', error);
-                    showDebug(`Error adding inquiry: ${error.message}`);
-                    return false;
                 }
             }
 
-            async saveContactSettings(settings) {
-                console.log('Saving contact settings...', settings);
+            saveContactSettings(settings) {
                 this.contactSettings = { ...settings };
-                
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('contact_settings')
-                        .upsert([settings]);
-                    
-                    if (error) {
-                        console.error('Save contact settings error:', error);
-                        showDebug(`Save contact settings error: ${error.message}`);
-                        throw error;
-                    }
-                    
-                    console.log('Contact settings saved successfully');
-                    return true;
-                } catch (error) {
-                    console.error('Error saving contact settings to Supabase:', error);
-                    showDebug(`Error saving contact settings: ${error.message}`);
-                    return false;
-                }
-            }
-
-            loadContactSettings() {
-                console.log('Loading contact settings into form...');
-                const form = document.getElementById('contactSettingsForm');
-                if (form && this.contactSettings) {
-                    Object.keys(this.contactSettings).forEach(key => {
-                        const field = form.elements[key];
-                        if (field) {
-                            field.value = this.contactSettings[key] || '';
-                        }
-                    });
-                }
+                this.saveData();
+                this.updateContactInfo();
             }
 
             generateId() {
@@ -1783,38 +2702,388 @@
             }
         }
 
-        // Initialize data manager when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded, initializing...');
-            dataManager = new AdvancedDataManager();
-        });
+        // Initialize data manager
+        const dataManager = new AdvancedDataManager();
 
-        // Section switching
-        function switchSection(section) {
-            console.log('Switching to section:', section);
-            
-            // Remove active class from all links
-            document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
-            
-            // Add active class to clicked link
-            document.querySelector(`[data-section="${section}"]`).classList.add('active');
-            
-            // Hide all sections
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            // Show target section
-            document.getElementById(section).classList.add('active');
-            
-            // Update page title
-            const title = document.querySelector(`[data-section="${section}"] span`).textContent;
-            document.getElementById('pageTitle').textContent = title;
+        // Mode switching
+        let currentMode = 'frontend';
+
+        function toggleMode() {
+            const frontendView = document.getElementById('frontendView');
+            const adminView = document.getElementById('adminView');
+            const toggleBtn = document.getElementById('modeToggle');
+
+            if (currentMode === 'frontend') {
+                frontendView.classList.remove('active');
+                adminView.classList.add('active');
+                toggleBtn.textContent = 'Switch to Frontend';
+                currentMode = 'admin';
+            } else {
+                adminView.classList.remove('active');
+                frontendView.classList.add('active');
+                toggleBtn.textContent = 'Switch to Admin';
+                currentMode = 'frontend';
+            }
         }
 
-        // Modal functions
+        // Media upload handling
+        function handleFileUpload(input, type) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewId = input.id + 'Preview';
+                const preview = document.getElementById(previewId);
+                
+                if (file.type.startsWith('image/')) {
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" class="upload-preview" alt="Preview">
+                        <button type="button" class="upload-remove" onclick="removeMedia('${input.id}')">&times;</button>
+                    `;
+                } else if (file.type.startsWith('video/')) {
+                    preview.innerHTML = `
+                        <video src="${e.target.result}" class="upload-preview" controls></video>
+                        <button type="button" class="upload-remove" onclick="removeMedia('${input.id}')">&times;</button>
+                    `;
+                }
+                
+                // Store in form data for later use
+                input.dataset.fileData = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeMedia(inputId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(inputId + 'Preview');
+            input.value = '';
+            input.dataset.fileData = '';
+            preview.innerHTML = '';
+        }
+
+        // Dynamic field management
+        function addSpecificationField() {
+            const container = document.getElementById('specificationsFields');
+            const fieldRow = document.createElement('div');
+            fieldRow.className = 'field-row';
+            fieldRow.innerHTML = `
+                <input type="text" class="form-input" placeholder="Specification Name" name="specName[]">
+                <input type="text" class="form-input" placeholder="Value" name="specValue[]">
+                <button type="button" class="btn-small btn-remove" onclick="removeField(this)">Remove</button>
+            `;
+            container.appendChild(fieldRow);
+        }
+
+        function addApplicationField() {
+            const container = document.getElementById('applicationsFields');
+            const fieldRow = document.createElement('div');
+            fieldRow.className = 'field-row';
+            fieldRow.innerHTML = `
+                <input type="text" class="form-input" placeholder="Application Description" name="application[]">
+                <div></div>
+                <button type="button" class="btn-small btn-remove" onclick="removeField(this)">Remove</button>
+            `;
+            container.appendChild(fieldRow);
+        }
+
+        function removeField(button) {
+            button.parentElement.remove();
+        }
+
+        // Frontend Functions
+        function searchProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.category-card');
+            const noResults = document.getElementById('noResults');
+            let hasResults = false;
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(searchTerm) || searchTerm === '') {
+                    card.style.display = 'block';
+                    card.style.animation = 'fadeIn 0.5s ease';
+                    hasResults = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            noResults.style.display = hasResults ? 'none' : 'block';
+        }
+
+        function filterCategory(category) {
+            const cards = document.querySelectorAll('.category-card');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const noResults = document.getElementById('noResults');
+            let hasResults = false;
+            
+            // Update active filter button
+            filterBtns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Show/hide cards
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                    card.style.animation = 'fadeIn 0.5s ease';
+                    hasResults = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            noResults.style.display = hasResults ? 'none' : 'block';
+            
+            // Clear search input when filtering
+            document.getElementById('searchInput').value = '';
+        }
+
+        function openProductModal(productId) {
+            const product = dataManager.products[productId];
+            if (!product) return;
+
+            const modalLeft = document.getElementById('modalLeft');
+            const modalRight = document.getElementById('modalRight');
+            
+            modalLeft.innerHTML = `
+                <h2>${product.title}</h2>
+                
+                <div class="modal-section">
+                    <h3>Product Overview</h3>
+                    <p>${product.overview}</p>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>Technical Specifications</h3>
+                    <div class="spec-grid">
+                        ${Object.entries(product.specifications).slice(0, 8).map(([key, value]) => 
+                            `<div class="spec-item">
+                                <strong>${key}:</strong> ${value}
+                            </div>`
+                        ).join('')}
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>Applications</h3>
+                    <ul>
+                        ${product.applications.map(app => `<li>${app}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+
+            // Display media if available
+            const mediaContent = [];
+            if (product.media && product.media['product-image']) {
+                mediaContent.push(`
+                    <div class="media-item">
+                        <img src="${product.media['product-image']}" class="media-image" alt="Product Image">
+                        <div class="media-caption">${product.title.split(' ').slice(0, 2).join(' ')}</div>
+                    </div>
+                `);
+            } else {
+                mediaContent.push(`
+                    <div class="media-item" onclick="openMedia('product-image', '${productId}')">
+                        <div class="media-placeholder">Product Image</div>
+                        <div class="media-caption">${product.title.split(' ').slice(0, 2).join(' ')}</div>
+                    </div>
+                `);
+            }
+
+            if (product.media && product.media['process-image']) {
+                mediaContent.push(`
+                    <div class="media-item">
+                        <img src="${product.media['process-image']}" class="media-image" alt="Process Image">
+                        <div class="media-caption">Manufacturing</div>
+                    </div>
+                `);
+            } else {
+                mediaContent.push(`
+                    <div class="media-item" onclick="openMedia('process-image', '${productId}')">
+                        <div class="media-placeholder">Process Image</div>
+                        <div class="media-caption">Manufacturing</div>
+                    </div>
+                `);
+            }
+
+            if (product.media && product.media['process-video']) {
+                mediaContent.push(`
+                    <div class="media-item">
+                        <video src="${product.media['process-video']}" class="media-image" controls></video>
+                        <div class="media-caption">Production</div>
+                    </div>
+                `);
+            } else {
+                mediaContent.push(`
+                    <div class="media-item" onclick="openMedia('process-video', '${productId}')">
+                        <div class="media-placeholder">Process Video</div>
+                        <div class="media-caption">Production</div>
+                    </div>
+                `);
+            }
+
+            if (product.media && product.media['quality-charts']) {
+                mediaContent.push(`
+                    <div class="media-item">
+                        <img src="${product.media['quality-charts']}" class="media-image" alt="Quality Charts">
+                        <div class="media-caption">Analysis</div>
+                    </div>
+                `);
+            } else {
+                mediaContent.push(`
+                    <div class="media-item" onclick="openMedia('quality-charts', '${productId}')">
+                        <div class="media-placeholder">Quality Charts</div>
+                        <div class="media-caption">Analysis</div>
+                    </div>
+                `);
+            }
+
+            modalRight.innerHTML = `
+                <div class="modal-section">
+                    <h3>Production Capacity & Pricing</h3>
+                    <div class="spec-grid">
+                        ${Object.entries(product.capacity).map(([key, value]) => 
+                            `<div class="spec-item">
+                                <strong>${key}:</strong> ${value}
+                            </div>`
+                        ).join('')}
+                    </div>
+                </div>
+
+                <div class="media-section">
+                    <h3>Product Images & Videos</h3>
+                    <div class="media-grid">
+                        ${mediaContent.join('')}
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>Quality Assurance</h3>
+                    <p>${product.qualityAssurance || 'Rigorous testing and quality certificates provided with each shipment.'}</p>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>Environmental Impact</h3>
+                    <p>${product.environmentalImpact || 'Sustainable production with zero-waste manufacturing processes.'}</p>
+                </div>
+            `;
+            
+            document.getElementById('productModal').style.display = 'block';
+        }
+
+        function openMedia(type, productId) {
+            alert(`Opening ${type} for ${productId}. In a full implementation, this would display actual media content.`);
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function openCategory(category) {
+            console.log(`Opening ${category} category page`);
+        }
+
+        // Quote Modal Functions - Routes to contact settings email
+        function openQuoteModal(service) {
+            dataManager.loadQuoteCategoryOptions();
+            document.getElementById('quoteModal').style.display = 'block';
+            
+            // Pre-select the service if applicable
+            const materialSelect = document.querySelector('#quoteForm select[name="material"]');
+            if (service) {
+                materialSelect.value = service;
+            }
+        }
+
+        function closeQuoteModal() {
+            document.getElementById('quoteModal').style.display = 'none';
+        }
+
+        function submitQuoteForm(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            
+            const quoteData = {
+                company: formData.get('company'),
+                contact: formData.get('contact'),
+                email: formData.get('email'),
+                material: formData.get('material'),
+                volume: formData.get('volume'),
+                timeline: formData.get('timeline'),
+                requirements: formData.get('requirements'),
+                interest: 'Quote Request'
+            };
+            
+            dataManager.addInquiry(quoteData);
+            
+            // Show success message with recipient email
+            const primaryEmail = dataManager.contactSettings.primaryRecipient || 'admin@commoditytrading.com';
+            alert(`Thank you for your quote request! We will contact you soon.\n\nYour inquiry will be sent to: ${primaryEmail}`);
+            event.target.reset();
+            closeQuoteModal();
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            
+            const inquiryData = {
+                company: formData.get('company'),
+                contact: formData.get('contact'),
+                email: formData.get('email'),
+                interest: formData.get('interest'),
+                message: formData.get('message')
+            };
+            
+            dataManager.addInquiry(inquiryData);
+            
+            // Show success message with recipient email
+            const primaryEmail = dataManager.contactSettings.primaryRecipient || 'admin@commoditytrading.com';
+            alert(`Thank you for your message! We will contact you soon.\n\nYour inquiry will be sent to: ${primaryEmail}`);
+            event.target.reset();
+        }
+
+        // Admin Functions
+        document.querySelectorAll('.menu-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                link.classList.add('active');
+                
+                // Hide all sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show target section
+                const targetSection = link.dataset.section;
+                document.getElementById(targetSection).classList.add('active');
+                
+                // Update page title
+                const title = link.querySelector('span').textContent;
+                document.getElementById('pageTitle').textContent = title;
+
+                // Load section data
+                if (targetSection === 'products') {
+                    dataManager.renderProductsAdmin();
+                } else if (targetSection === 'categories') {
+                    dataManager.renderCategoriesAdmin();
+                } else if (targetSection === 'innovation') {
+                    dataManager.renderProjectsAdmin();
+                } else if (targetSection === 'inquiries') {
+                    dataManager.renderInquiriesAdmin();
+                } else if (targetSection === 'contacts') {
+                    dataManager.loadContactSettings();
+                }
+            });
+        });
+
         function openProductModal() {
-            console.log('Opening product modal...');
             const modal = document.getElementById('adminProductModal');
             const form = document.getElementById('productForm');
             const title = document.getElementById('productModalTitle');
@@ -1850,7 +3119,6 @@
         }
 
         function editProduct(productId) {
-            console.log('Editing product:', productId);
             const modal = document.getElementById('adminProductModal');
             const form = document.getElementById('productForm');
             const title = document.getElementById('productModalTitle');
@@ -1926,7 +3194,6 @@
         }
 
         function openCategoryModal() {
-            console.log('Opening category modal...');
             const modal = document.getElementById('adminCategoryModal');
             const form = document.getElementById('categoryForm');
             const title = document.getElementById('categoryModalTitle');
@@ -1937,7 +3204,6 @@
         }
 
         function editCategory(categoryId) {
-            console.log('Editing category:', categoryId);
             const modal = document.getElementById('adminCategoryModal');
             const form = document.getElementById('categoryForm');
             const title = document.getElementById('categoryModalTitle');
@@ -1952,7 +3218,6 @@
         }
 
         function openProjectModal() {
-            console.log('Opening project modal...');
             const modal = document.getElementById('adminProjectModal');
             const form = document.getElementById('projectForm');
             const title = document.getElementById('projectModalTitle');
@@ -1963,7 +3228,6 @@
         }
 
         function editProject(projectId) {
-            console.log('Editing project:', projectId);
             const modal = document.getElementById('adminProjectModal');
             const form = document.getElementById('projectForm');
             const title = document.getElementById('projectModalTitle');
@@ -1978,13 +3242,24 @@
             modal.style.display = 'block';
         }
 
+        function editInquiryEmail(index) {
+            const modal = document.getElementById('inquiryEditModal');
+            const form = document.getElementById('inquiryEditForm');
+            const inquiry = dataManager.inquiries[index];
+
+            form.elements['index'].value = index;
+            form.elements['primaryRecipient'].value = inquiry.recipients ? inquiry.recipients.primary : dataManager.contactSettings.primaryRecipient;
+            form.elements['ccEmail1'].value = inquiry.recipients && inquiry.recipients.cc[0] ? inquiry.recipients.cc[0] : '';
+            form.elements['ccEmail2'].value = inquiry.recipients && inquiry.recipients.cc[1] ? inquiry.recipients.cc[1] : '';
+
+            modal.style.display = 'block';
+        }
+
         function closeAdminModal(modalId) {
-            console.log('Closing modal:', modalId);
             document.getElementById(modalId).style.display = 'none';
         }
 
         function viewInquiry(index) {
-            console.log('Viewing inquiry:', index);
             const inquiry = dataManager.inquiries[index];
             const recipients = inquiry.recipients || { primary: 'admin@commoditytrading.com', cc: [] };
             const ccList = recipients.cc.length > 0 ? recipients.cc.join(', ') : 'None';
@@ -2010,7 +3285,6 @@
         }
 
         function saveContactSettings(event) {
-            console.log('Saving contact settings...');
             event.preventDefault();
             const formData = new FormData(event.target);
             const settings = {};
@@ -2020,82 +3294,12 @@
             }
             
             dataManager.saveContactSettings(settings);
-        }
-
-        // Media upload handling
-        function handleFileUpload(input, type) {
-            console.log('Handling file upload...', type);
-            const file = input.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const previewId = input.id + 'Preview';
-                const preview = document.getElementById(previewId);
-                
-                if (file.type.startsWith('image/')) {
-                    preview.innerHTML = `
-                        <img src="${e.target.result}" class="upload-preview" alt="Preview">
-                        <button type="button" class="upload-remove" onclick="removeMedia('${input.id}')">&times;</button>
-                    `;
-                } else if (file.type.startsWith('video/')) {
-                    preview.innerHTML = `
-                        <video src="${e.target.result}" class="upload-preview" controls></video>
-                        <button type="button" class="upload-remove" onclick="removeMedia('${input.id}')">&times;</button>
-                    `;
-                }
-                
-                // Store in form data for later use
-                input.dataset.fileData = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function removeMedia(inputId) {
-            console.log('Removing media:', inputId);
-            const input = document.getElementById(inputId);
-            const preview = document.getElementById(inputId + 'Preview');
-            input.value = '';
-            input.dataset.fileData = '';
-            preview.innerHTML = '';
-        }
-
-        // Dynamic field management
-        function addSpecificationField() {
-            console.log('Adding specification field...');
-            const container = document.getElementById('specificationsFields');
-            const fieldRow = document.createElement('div');
-            fieldRow.className = 'field-row';
-            fieldRow.innerHTML = `
-                <input type="text" class="form-input" placeholder="Specification Name" name="specName[]">
-                <input type="text" class="form-input" placeholder="Value" name="specValue[]">
-                <button type="button" class="btn-small btn-remove" onclick="removeField(this)">Remove</button>
-            `;
-            container.appendChild(fieldRow);
-        }
-
-        function addApplicationField() {
-            console.log('Adding application field...');
-            const container = document.getElementById('applicationsFields');
-            const fieldRow = document.createElement('div');
-            fieldRow.className = 'field-row';
-            fieldRow.innerHTML = `
-                <input type="text" class="form-input" placeholder="Application Description" name="application[]">
-                <div></div>
-                <button type="button" class="btn-small btn-remove" onclick="removeField(this)">Remove</button>
-            `;
-            container.appendChild(fieldRow);
-        }
-
-        function removeField(button) {
-            console.log('Removing field...');
-            button.parentElement.remove();
+            alert('Contact settings saved successfully!');
         }
 
         // Form submissions
-        document.getElementById('productForm').addEventListener('submit', async (e) => {
+        document.getElementById('productForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            console.log('Product form submitted');
             const formData = new FormData(e.target);
             const productData = {};
             
@@ -2123,24 +3327,18 @@
             });
             productData.media = media;
 
-            let success = false;
             if (productData.id) {
-                success = await dataManager.editProduct(productData.id, productData);
+                dataManager.editProduct(productData.id, productData);
             } else {
-                success = await dataManager.addProduct(productData);
+                dataManager.addProduct(productData);
             }
 
-            if (success) {
-                closeAdminModal('adminProductModal');
-                alert('Product saved successfully!');
-            } else {
-                alert('Error saving product. Please try again.');
-            }
+            closeAdminModal('adminProductModal');
+            alert('Product saved successfully!');
         });
 
-        document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+        document.getElementById('categoryForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            console.log('Category form submitted');
             const formData = new FormData(e.target);
             const categoryData = {
                 id: formData.get('id') || null,
@@ -2148,24 +3346,18 @@
                 description: formData.get('description')
             };
 
-            let success = false;
             if (categoryData.id) {
-                success = await dataManager.editCategory(categoryData.id, categoryData);
+                dataManager.editCategory(categoryData.id, categoryData);
             } else {
-                success = await dataManager.addCategory(categoryData);
+                dataManager.addCategory(categoryData);
             }
 
-            if (success) {
-                closeAdminModal('adminCategoryModal');
-                alert('Category saved successfully!');
-            } else {
-                alert('Error saving category. Please try again.');
-            }
+            closeAdminModal('adminCategoryModal');
+            alert('Category saved successfully!');
         });
 
-        document.getElementById('projectForm').addEventListener('submit', async (e) => {
+        document.getElementById('projectForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            console.log('Project form submitted');
             const formData = new FormData(e.target);
             const projectData = {
                 id: formData.get('id') || null,
@@ -2174,27 +3366,260 @@
                 expectedDate: formData.get('expectedDate')
             };
 
-            let success = false;
             if (projectData.id) {
-                success = await dataManager.editProject(projectData.id, projectData);
+                dataManager.editProject(projectData.id, projectData);
             } else {
-                success = await dataManager.addProject(projectData);
+                dataManager.addProject(projectData);
             }
 
-            if (success) {
-                closeAdminModal('adminProjectModal');
-                alert('Project saved successfully!');
+            closeAdminModal('adminProjectModal');
+            alert('Project saved successfully!');
+        });
+
+        document.getElementById('inquiryEditForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const index = parseInt(formData.get('index'));
+            const emailSettings = {
+                primaryRecipient: formData.get('primaryRecipient'),
+                ccEmail1: formData.get('ccEmail1'),
+                ccEmail2: formData.get('ccEmail2')
+            };
+
+            dataManager.updateInquiryEmailSettings(index, emailSettings);
+            closeAdminModal('inquiryEditModal');
+            alert('Email settings updated successfully!');
+        });
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            if (e.target.value.length > 0) {
+                searchProducts();
             } else {
-                alert('Error saving project. Please try again.');
+                document.querySelectorAll('.category-card').forEach(card => {
+                    card.style.display = 'block';
+                });
+                document.getElementById('noResults').style.display = 'none';
+            }
+        });
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchProducts();
             }
         });
 
         // Close modals when clicking outside
         window.onclick = function(event) {
-            if (event.target.classList.contains('admin-modal')) {
+            if (event.target.classList.contains('modal') || event.target.classList.contains('admin-modal') || event.target.classList.contains('quote-modal')) {
                 event.target.style.display = 'none';
             }
         }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+    const { createClient } = supabase;
+    const SUPABASE_URL = 'https://kunrarieegagtkxiudfa.supabase.co';
+    const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUxMjIyOCwiZXhwIjoyMDc1MDg4MjI4fQ.5UG0ffdyjyND018iopSeY9aCB3W_nljOsWu3G2bkrjo';
+    const supabaseClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+    
+    async function loadAdminData() {
+      let {  products } = await supabaseClient.from('products').select('*');
+      let {  categories } = await supabaseClient.from('categories').select('*');
+      // Call your ADMIN TABLE render functions here
+      renderAdminProducts(products || []);
+      renderAdminCategories(categories || []);
+    }
+    // Call once on load, and after every add/edit/delete
+    document.addEventListener('DOMContentLoaded', loadAdminData);
+    
+    // Example: call loadAdminData() after any change
+    // async function addProduct(productObj) { ...; await loadAdminData(); }
+    // async function updateProduct(productObj) { ...; await loadAdminData(); }
+    // async function deleteProduct(productId) { ...; await loadAdminData(); }
+    </script>
+    <!-- ADD THIS AT THE END OF YOUR BODY, BEFORE </body> -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      // Supabase client configuration
+      const { createClient } = supabase;
+      const SUPABASE_URL = 'https://kunrarieegagtkxiudfa.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI';
+      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+      // LOAD categories and products when admin loads
+      async function loadAdminTables() {
+        const {  categories, error: catError } = await supabaseClient.from('categories').select('*');
+        const {  products, error: prodError } = await supabaseClient.from('products').select('*');
+        // Write functions to update your admin UI with these
+        renderAdminCategories(categories || []);
+        renderAdminProducts(products || []);
+      }
+    
+      // EXAMPLES -- replace these with your actual logic to update UI
+      function renderAdminCategories(categories) {
+        // Example: fill category table or dropdown
+        console.log('Categories for admin:', categories);
+        // ToDo: update your admin HTML table or form
+      }
+      function renderAdminProducts(products) {
+        // Example: fill product table
+        console.log('Products for admin:', products);
+        // ToDo: update your admin HTML table
+      }
+    
+      // CRUD EXAMPLES FOR ADMIN (connect these to button clicks/forms)
+      async function createProduct(productObj) {
+        const { data, error } = await supabaseClient.from('products').insert([productObj]);
+        loadAdminTables();
+        if (error) alert('Error adding product');
+      }
+    
+      async function updateProduct(productId, updateObj) {
+        const { data, error } = await supabaseClient.from('products').update(updateObj).eq('id', productId);
+        loadAdminTables();
+        if (error) alert('Error updating product');
+      }
+    
+      async function deleteProduct(productId) {
+        const { data, error } = await supabaseClient.from('products').delete().eq('id', productId);
+        loadAdminTables();
+        if (error) alert('Error deleting product');
+      }
+    
+      // Now, wire up your admin dashboard buttons/forms to call these CRUD functions as needed.
+    
+      // INITIAL LOAD FOR ADMIN VIEW
+      document.addEventListener('DOMContentLoaded', loadAdminTables);
+    </script>
+    <!-- Add this before </body> in both admin and index/public HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const { createClient } = supabase;
+      const SUPABASE_URL = "https://kunrarieegagtkxiudfa.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI";
+      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const { createClient } = supabase;
+      const SUPABASE_URL = "https://kunrarieegagtkxiudfa.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI";
+      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+      // Admin: example for loading all products, categories, projects, and inquiries
+      async function loadAdminData() {
+        const {  products } = await supabaseClient.from('products').select('*');
+        const {  categories } = await supabaseClient.from('categories').select('*');
+        const {  projects } = await supabaseClient.from('projects').select('*');
+        const {  inquiries } = await supabaseClient.from('inquiries').select('*');
+        const {  contacts } = await supabaseClient.from('contact_settings').select('*');
+        console.log('Products:', products);
+        console.log('Categories:', categories);
+        console.log('Projects:', projects);
+        console.log('Inquiries:', inquiries);
+        console.log('Contacts:', contacts);
+        // TODO: Use this data to power your admin dashboard
+      }
+      document.addEventListener('DOMContentLoaded', loadAdminData);
+    
+      // Example: Functions to create, update, or delete products.
+      // Connect these to your admin form & buttons as needed.
+      async function addProduct(productObj) {
+        await supabaseClient.from('products').insert([productObj]);
+        loadAdminData();
+      }
+      async function updateProduct(id, updateFields) {
+        await supabaseClient.from('products').update(updateFields).eq('id', id);
+        loadAdminData();
+      }
+      async function deleteProduct(id) {
+        await supabaseClient.from('products').delete().eq('id', id);
+        loadAdminData();
+      }
+    </script>
+    </body>
+    </html>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const { createClient } = supabase;
+      const SUPABASE_URL = "https://kunrarieegagtkxiudfa.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI";
+      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+      // Load all admin dashboard data
+      async function loadAdminData() {
+        const {  products } = await supabaseClient.from('products').select('*');
+        const {  categories } = await supabaseClient.from('categories').select('*');
+        const {  projects } = await supabaseClient.from('projects').select('*');
+        const {  inquiries } = await supabaseClient.from('inquiries').select('*');
+        const {  contacts } = await supabaseClient.from('contact_settings').select('*');
+        console.log('products:', products);
+        console.log('categories:', categories);
+        console.log('projects:', projects);
+        console.log('inquiries:', inquiries);
+        console.log('contacts:', contacts);
+        // TODO: Plug this data into your admin UI logic!
+      }
+    
+      document.addEventListener('DOMContentLoaded', loadAdminData);
+    
+      // Example: Add a new product
+      async function addProduct(productObj) {
+        await supabaseClient.from('products').insert([productObj]);
+        loadAdminData();
+      }
+    
+      // Example: Update product
+      async function updateProduct(id, updateFields) {
+        await supabaseClient.from('products').update(updateFields).eq('id', id);
+        loadAdminData();
+      }
+    
+      // Example: Delete product
+      async function deleteProduct(id) {
+        await supabaseClient.from('products').delete().eq('id', id);
+        loadAdminData();
+      }
+    </script>
+    </body>
+    </html>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+    // Initialize Supabase client
+    const SUPABASE_URL = "https://kunrarieegagtkxiudfa.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1bnJhcmllZWdhZ3RreGl1ZGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTIyMjgsImV4cCI6MjA3NTA4ODIyOH0.cAcKViNIT6qI5eFM18IDaWKWsAIfwQ3gvugFo0iWbaI";
+    
+    // Create the Supabase client
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Load data for admin dashboard
+    async function loadAdminData() {
+      const {  products } = await supabase.from('products').select('*');
+      const {  categories } = await supabase.from('categories').select('*');
+      // Add other table fetches as needed
+      console.log('Products:', products);
+      console.log('Categories:', categories);
+      // TODO: Update your admin UI with this data
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadAdminData);
+    
+    // Example CRUD functions
+    async function addProduct(product) {
+      await supabase.from('products').insert([product]);
+      loadAdminData();
+    }
+    
+    async function updateProduct(id, changes) {
+      await supabase.from('products').update(changes).eq('id', id);
+      loadAdminData();
+    }
+    
+    async function deleteProduct(id) {
+      await supabase.from('products').delete().eq('id', id);
+      loadAdminData();
+    }
     </script>
 </body>
 </html>
